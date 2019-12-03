@@ -61,7 +61,8 @@ function Copy-DbrDbDataType {
         [DbaInstanceParameter]$DestinationSqlInstance,
         [PSCredential]$DestinationSqlCredential,
         [parameter(Mandatory)]
-        [string]$Database,
+        [string]$SourceDatabase,
+        [string]$DestinationDatabase,
         [string]$Schema,
         [string[]]$DataType,
         [switch]$EnableException
@@ -70,43 +71,58 @@ function Copy-DbrDbDataType {
     begin {
         $progressId = 1
 
-        $stopwatchObject = New-Object System.Diagnostics.Stopwatch
+        # Check the parameters
+        if (-not $DestinationDatabase) {
+            Write-PSFMessage -Message "Setting destination database to '$($SourceDatabase)'" -Level Verbose
+            $DestinationDatabase = $SourceDatabase
+        }
 
-        $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $Database
+        if (($DestinationDatabase -eq $SourceDatabase) -and ($SourceSqlInstance -eq $DestinationSqlInstance)) {
+            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase
+            return
+        }
+
+        # Connect to the source instance
+        $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
+
+        $db = $sourceServer.Databases[$Database]
 
         $task = "Collecting user defined data types"
 
         Write-Progress -Id ($progressId + 2) -ParentId ($progressId + 1) -Activity $task
 
+        # retrieve the data types
         try {
-            $uddts = $db.UserDefinedDataTypes | Sort-Object Schema, Name
+            $dataTypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
         if ($Schema) {
-            $uddts = $uddts | Where-Object Schema -in $Schema
+            $dataTypes = $dataTypes | Where-Object Schema -in $Schema
         }
 
         if (DataType) {
-            $uddts = $uddts | Where-Object Name -in DataType
+            $dataTypes = $dataTypes | Where-Object Name -in DataType
         }
+
+        $stopwatchObject = New-Object System.Diagnostics.Stopwatch
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        $totalObjects = $uddts.Count
+        $totalObjects = $dataTypes.Count
         $objectStep = 0
 
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying user defined data types to database $Database")) {
                 # Create the user defined table types
-                foreach ($uddt in $uddts) {
+                foreach ($object in $dataTypes) {
                     $objectStep++
                     $task = "Creating Data Type(s)"
-                    $operation = "Data Type [$($uddt.Schema)].[$($uddt.Name)]"
+                    $operation = "Data Type [$($object.Schema)].[$($object.Name)]"
 
                     $params = @{
                         Id               = ($progressId + 2)
@@ -121,15 +137,15 @@ function Copy-DbrDbDataType {
 
                     Write-Progress @params
 
-                    Write-PSFMessage -Level Verbose -Message "Creating data type [$($uddt.Schema)].[$($uddt.Name)] in $($db.Name)"
+                    Write-PSFMessage -Level Verbose -Message "Creating data type [$($object.Schema)].[$($object.Name)] in $($db.Name)"
 
-                    $query = ($uddts | Where-Object { $_.Schema -eq $uddt.Schema -and $_.Name -eq $uddt.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                    $query = ($dataTypes | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                     try {
                         Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $Database -Query $query -EnableException
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not execute script for data type $uddt" -ErrorRecord $_ -Target $view
+                        Stop-PSFFunction -Message "Could not execute script for data type $object" -ErrorRecord $_ -Target $view
                     }
 
                     $stopwatchObject.Stop()
@@ -139,7 +155,7 @@ function Copy-DbrDbDataType {
                         Database       = $Database
                         ObjectType     = "User Defined Data Type"
                         Parent         = $Database
-                        Object         = "$($uddt.Schema).$($uddt.Name)"
+                        Object         = "$($object.Schema).$($object.Name)"
                         Information    = $null
                         ElapsedSeconds = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                     }
@@ -147,6 +163,9 @@ function Copy-DbrDbDataType {
                     $stopwatchObject.Reset()
                 }
             }
+        }
+        else {
+            Write-PSFMessage -Message "No data types found" -Level Verbose
         }
     }
 }
