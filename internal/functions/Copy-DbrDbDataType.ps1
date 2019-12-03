@@ -25,7 +25,7 @@ function Copy-DbrDbDataType {
     .PARAMETER Schema
         Filter based on schema
 
-    .PARAMETER Udtt
+    .PARAMETER DataType
         View to filter out
 
     .PARAMETER WhatIf
@@ -63,7 +63,7 @@ function Copy-DbrDbDataType {
         [parameter(Mandatory)]
         [string]$Database,
         [string]$Schema,
-        [string[]]$Uddt,
+        [string[]]$DataType,
         [switch]$EnableException
     )
 
@@ -89,8 +89,8 @@ function Copy-DbrDbDataType {
             $uddts = $uddts | Where-Object Schema -in $Schema
         }
 
-        if ($Uddt) {
-            $uddts = $uddts | Where-Object Name -in $Uddts
+        if (DataType) {
+            $uddts = $uddts | Where-Object Name -in DataType
         }
     }
 
