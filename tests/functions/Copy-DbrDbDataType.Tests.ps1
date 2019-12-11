@@ -81,7 +81,7 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
     }
 
     AfterAll {
-        #Remove-DbaDatabase -SqlInstance $sourceServer -Database $script:sourcedatabase
-        #Remove-DbaDatabase -SqlInstance $destServer -Database $script:destinationdatabase
+        $null = Remove-DbaDatabase -SqlInstance $sourceServer -Database $script:sourcedatabase -Confirm:$false
+        $null = Remove-DbaDatabase -SqlInstance $destServer -Database $script:destinationdatabase -Confirm:$false
     }
 }
