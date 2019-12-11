@@ -19,8 +19,11 @@ function Copy-DbrDbDataType {
     .PARAMETER DestinationSqlCredential
         Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
-    .PARAMETER Database
-        Database to Copy the user defined data types from
+    .PARAMETER SourceDatabase
+        Database to copy the user defined data types from
+
+    .PARAMETER DestinationDatabase
+        Database to copy the user defined data types to
 
     .PARAMETER Schema
         Filter based on schema
@@ -85,7 +88,7 @@ function Copy-DbrDbDataType {
         # Connect to the source instance
         $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
 
-        $db = $sourceServer.Databases[$Database]
+        $db = $sourceServer.Databases[$SourceDatabase]
 
         $task = "Collecting user defined data types"
 
@@ -103,7 +106,7 @@ function Copy-DbrDbDataType {
             $dataTypes = $dataTypes | Where-Object Schema -in $Schema
         }
 
-        if (DataType) {
+        if ($DataType) {
             $dataTypes = $dataTypes | Where-Object Name -in DataType
         }
 
