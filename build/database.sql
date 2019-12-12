@@ -1,3 +1,4 @@
+
 -- Drop the foreign keys
 IF EXISTS
 (
@@ -6,7 +7,7 @@ FROM sys.foreign_keys
 WHERE object_id = OBJECT_ID(N'FK__Table2_Table1')
     AND parent_object_id = OBJECT_ID(N'dbo.Table2')
 )
-    ALTER TABLE [dbo].[Table2] DROP CONSTRAINT [FK__Table2_Table1]
+    ALTER TABLE [dbo].[Table2] DROP CONSTRAINT [FK__Table2_Table1];
 
 IF EXISTS
 (
@@ -15,7 +16,7 @@ FROM sys.foreign_keys
 WHERE object_id = OBJECT_ID(N'FK__Table3_Table2')
     AND parent_object_id = OBJECT_ID(N'dbo.Table3')
 )
-    ALTER TABLE [dbo].[Table3] DROP CONSTRAINT [FK__Table3_Table2]
+    ALTER TABLE [dbo].[Table3] DROP CONSTRAINT [FK__Table3_Table2];
 GO
 
 -- Dropping tables
@@ -33,6 +34,23 @@ GO
 -- Dropping table types
 DROP TYPE IF EXISTS [dbo].[TableType1];
 DROP TYPE IF EXISTS [dbo].[TableType2];
+GO
+
+-- Dropping schemas
+DROP SCHEMA IF EXISTS [Schema1];
+DROP SCHEMA IF EXISTS [Schema1];
+DROP SCHEMA IF EXISTS [Schema1];
+DROP SCHEMA IF EXISTS [Schema1];
+GO
+
+-- Creating schemas
+CREATE SCHEMA [Schema1];
+GO
+CREATE SCHEMA [Schema2];
+GO
+CREATE SCHEMA [Schema3];
+GO
+CREATE SCHEMA [Schema4];
 GO
 
 -- Create the tables
