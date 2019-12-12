@@ -36,8 +36,6 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
         $sourceDb = $sourceServer.Databases[$script:sourcedatabase]
 
         Context "Database pre-checks" {
-            $destServer.Databases.refresh()
-
             It "Source database should contain data types" {
                 $dataTypes = @()
                 $dataTypes += $sourceDb.UserDefinedDataTypes | Sort-Object Schema, Name
