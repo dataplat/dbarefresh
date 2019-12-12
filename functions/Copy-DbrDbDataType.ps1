@@ -107,10 +107,8 @@ function Copy-DbrDbDataType {
         }
 
         if ($DataType) {
-            $dataTypes = $dataTypes | Where-Object Name -in DataType
+            $dataTypes = $dataTypes | Where-Object Name -in $DataType
         }
-
-        $stopwatchObject = New-Object System.Diagnostics.Stopwatch
     }
 
     process {
@@ -136,8 +134,6 @@ function Copy-DbrDbDataType {
                         CurrentOperation = $operation
                     }
 
-                    $stopwatchObject.Start()
-
                     Write-Progress @params
 
                     Write-PSFMessage -Level Verbose -Message "Creating data type [$($object.Schema)].[$($object.Name)] in $($db.Name)"
@@ -145,25 +141,22 @@ function Copy-DbrDbDataType {
                     $query = ($dataTypes | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                     try {
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $Database -Query $query -EnableException
+                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute script for data type $object" -ErrorRecord $_ -Target $view
                     }
 
-                    $stopwatchObject.Stop()
-
                     [PSCustomObject]@{
-                        SqlInstance    = $DestinationSqlInstance
-                        Database       = $Database
-                        ObjectType     = "User Defined Data Type"
-                        Parent         = $Database
-                        Object         = "$($object.Schema).$($object.Name)"
-                        Information    = $null
-                        ElapsedSeconds = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "User Defined Data Type"
+                        Parent                 = $null
+                        Object                 = "$($object.Schema).$($object.Name)"
+                        Information            = $null
                     }
-
-                    $stopwatchObject.Reset()
                 }
             }
         }
