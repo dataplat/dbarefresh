@@ -14,7 +14,6 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 
 Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
     BeforeAll {
-
         $sourceServer = Connect-DbaInstance -SqlInstance $script:instance1
         $destServer = Connect-DbaInstance -SqlInstance $script:instance2
 
@@ -29,54 +28,94 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
         $query = "CREATE DATABASE [$($script:sourcedatabase)]"
         Invoke-DbaQuery -SqlInstance $sourceServer -Database 'master' -Query $query
 
-        $query = "CREATE DATABASE [$($script:destinationdatabase)]"
-        Invoke-DbaQuery -SqlInstance $destServer -Database 'master' -Query $query
-
         $query = Get-Content -Path "$PSScriptRoot\..\..\build\database.sql" -Raw
         Invoke-DbaQuery -SqlInstance $destServer -Database $script:sourcedatabase -Query $query
 
         $sourceServer.Databases.Refresh()
-        $destServer.Databases.refresh()
 
-    }
-
-    Context "Copy data types" {
         $sourceDb = $sourceServer.Databases[$script:sourcedatabase]
-        $destDb = $destServer.Databases[$script:destinationdatabase]
 
         Context "Database pre-checks" {
-            It "Should contain data types" {
+            $destServer.Databases.refresh()
+
+            It "Source database should contain data types" {
                 $dataTypes = @()
                 $dataTypes += $sourceDb.UserDefinedDataTypes | Sort-Object Schema, Name
-                $dataTypes.Count | Should BeGreaterThan 0
-            }
-
-            It "Should not contain data types" {
-                $dataTypes = @()
-                $dataTypes += $destDb.UserDefinedDataTypes | Sort-Object Schema, Name
-                $dataTypes.Count | Should Be 0
+                $dataTypes.Count | Should -Be 3
             }
         }
+    }
 
-        Context "Execute command" {
-            $params = @{
-                SourceSqlInstance      = $script:instance1
-                DestinationSqlInstance = $destServer
-                SourceDatabase         = $sourceDb.Name
-                DestinationDatabase    = $destDb.Name
-                EnableException        = $true
-            }
+    Context "Execute command with all defaults" {
+        # Preperations
+        Remove-DbaDatabase -SqlInstance $destServer -Database $script:destinationdatabase -Confirm:$false
 
-            Copy-DbrDbDataType @params
+        $query = "CREATE DATABASE [$($script:destinationdatabase)]"
+        Invoke-DbaQuery -SqlInstance $destServer -Database 'master' -Query $query
 
-            $destDb.UserDefinedDataTypes.Refresh()
+        $destServer.Databases.Refresh()
+        $destDb = $destServer.Databases[$script:destinationdatabase]
 
-            $dataTypes = @()
-            $dataTypes += $destDb.UserDefinedDataTypes | Sort-Object Schema, Name
+        # Setup parameters
+        $params = @{
+            SourceSqlInstance      = $sourceServer.DomainInstanceName
+            DestinationSqlInstance = $destServer.DomainInstanceName
+            SourceDatabase         = $sourceDb.Name
+            DestinationDatabase    = $destDb.Name
+            EnableException        = $true
+        }
 
-            It "Destination database should have data types" {
-                $dataTypes.Count | Should BeGreaterThan 0
-            }
+        # Run command
+        Copy-DbrDbDataType @params
+
+        $destDb.UserDefinedDataTypes.Refresh()
+
+        $dataTypes = @()
+        $dataTypes += $destDb.UserDefinedDataTypes | Sort-Object Schema, Name
+
+        It "Destination database should have data types" {
+            $dataTypes.Count | Should -BeGreaterThan 0
+        }
+
+        It "Destination database should have correct amount of data types" {
+            $dataTypes.Count | Should -Be 3
+        }
+    }
+
+    Context "Execute command with data type filter" {
+        # Preperations
+        Remove-DbaDatabase -SqlInstance $destServer -Database $script:destinationdatabase -Confirm:$false
+
+        $query = "CREATE DATABASE [$($script:destinationdatabase)]"
+        Invoke-DbaQuery -SqlInstance $destServer -Database 'master' -Query $query
+
+        $destServer.Databases.Refresh()
+        $destDb = $destServer.Databases[$script:destinationdatabase]
+
+        # Setup parameters
+        $params = @{
+            SourceSqlInstance      = $sourceServer.DomainInstanceName
+            DestinationSqlInstance = $destServer.DomainInstanceName
+            SourceDatabase         = $sourceDb.Name
+            DestinationDatabase    = $destDb.Name
+            DataType               = @("DataType2", "DataType3")
+            EnableException        = $true
+        }
+
+        # Run command
+        Copy-DbrDbDataType @params
+
+        $destDb.UserDefinedDataTypes.Refresh()
+
+        $dataTypes = @()
+        $dataTypes += $destDb.UserDefinedDataTypes | Sort-Object Schema, Name
+
+        It "Destination database should have correct amount of data types" {
+            $dataTypes.Count | Should -Be 2
+        }
+
+        It "Destination database should have the correct data types" {
+            $dataTypes.Name | Should -BeIn @("DataType2", "DataType3")
         }
     }
 
