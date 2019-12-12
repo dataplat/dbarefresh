@@ -44,6 +44,7 @@
 	FunctionsToExport = 'Copy-DbrDbDataType',
 	'Copy-DbrDbForeignKey',
 	'Copy-DbrDbIndex',
+	'Copy-DbrDbSchema',
 	'Copy-DbrDbTable',
 	'Copy-DbrDbTableType'
 
