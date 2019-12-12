@@ -41,7 +41,11 @@
 	# FormatsToProcess = @('xml\PSDatabaseRefresh.Format.ps1xml')
 
 	# Functions to export from this module
-	FunctionsToExport = 'Copy-DbrDbDataType'
+	FunctionsToExport = 'Copy-DbrDbDataType',
+	'Copy-DbrDbForeignKey',
+	'Copy-DbrDbIndex',
+	'Copy-DbrDbTable',
+	'Copy-DbrDbTableType'
 
 	# Cmdlets to export from this module
 	CmdletsToExport   = ''
