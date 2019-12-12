@@ -19,6 +19,12 @@ WHERE object_id = OBJECT_ID(N'FK__Table3_Table2')
     ALTER TABLE [dbo].[Table3] DROP CONSTRAINT [FK__Table3_Table2];
 GO
 
+-- Dropping functions
+DROP FUNCTION IF EXISTS [dbo].[RandomNumberFunction]
+DROP FUNCTION IF EXISTS [dbo].[SayHello]
+DROP FUNCTION IF EXISTS [dbo].[Function1]
+GO
+
 -- Dropping tables
 DROP TABLE IF EXISTS [dbo].[Table1];
 DROP TABLE IF EXISTS [dbo].[Table2];
@@ -119,4 +125,45 @@ CREATE TYPE [dbo].[TableType2] AS TABLE
     [column1] [VARCHAR](30) NOT NULL,
     [column2] [VARCHAR](50) NULL
 );
+GO
+
+-- Create the user defined functions
+CREATE FUNCTION [dbo].[Function1]()
+RETURNS INT
+AS
+BEGIN
+    RETURN 1
+END;
+GO
+
+CREATE FUNCTION [dbo].[RandomNumberFunction](@MaxValue INT = NULL)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @result INT
+    DECLARE @random DECIMAL(18,8)
+    SELECT @random = RandomResult
+    FROM dbo.RandomNumberView
+
+    SELECT @result = ROUND(@random * @MaxValue, 0);
+
+    RETURN @result
+END;
+GO
+
+CREATE FUNCTION [dbo].[SayHello]
+(
+    @name VARCHAR(100)
+)
+RETURNS VARCHAR(120)
+AS
+BEGIN
+    DECLARE @text VARCHAR(120);
+
+    SET @text = COALESCE('Hello', ' ', @name);
+
+    -- Return the result of the function
+    RETURN @text;
+
+END;
 GO
