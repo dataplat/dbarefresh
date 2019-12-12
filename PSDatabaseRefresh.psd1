@@ -43,6 +43,7 @@
 	# Functions to export from this module
 	FunctionsToExport = 'Copy-DbrDbDataType',
 	'Copy-DbrDbForeignKey',
+	'Copy-DbrDbFunction',
 	'Copy-DbrDbIndex',
 	'Copy-DbrDbSchema',
 	'Copy-DbrDbTable',
