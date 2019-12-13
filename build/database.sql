@@ -19,6 +19,12 @@ WHERE object_id = OBJECT_ID(N'FK__Table3_Table2')
     ALTER TABLE [dbo].[Table3] DROP CONSTRAINT [FK__Table3_Table2];
 GO
 
+-- Dropping procedures
+DROP PROCEDURE IF EXISTS [dbo].[Proc1]
+DROP PROCEDURE IF EXISTS [dbo].[Proc2]
+DROP PROCEDURE IF EXISTS [dbo].[Proc3]
+GO
+
 -- Dropping functions
 DROP FUNCTION IF EXISTS [dbo].[RandomNumberFunction]
 DROP FUNCTION IF EXISTS [dbo].[SayHello]
@@ -166,4 +172,25 @@ BEGIN
     RETURN @text;
 
 END;
+GO
+
+-- Create procedures
+CREATE PROCEDURE [dbo].[Proc1]
+AS
+SELECT 'Proc1';
+GO
+
+CREATE PROCEDURE [dbo].[Proc2]
+    @id AS INT
+AS
+BEGIN
+    SELECT *
+    FROM [dbo].[Table1]
+    WHERE id = @id;
+END;
+GO
+
+CREATE PROCEDURE [dbo].[Proc3]
+AS
+SELECT 'Proc3';
 GO
