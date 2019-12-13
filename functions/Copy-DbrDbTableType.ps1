@@ -118,6 +118,7 @@ function Copy-DbrDbTableType {
 
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying user defined table types to database $Database")) {
+
                 # Create the user defined table types
                 foreach ($object in $tableTypes) {
                     $objectStep++

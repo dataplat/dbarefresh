@@ -97,7 +97,8 @@ function Copy-DbrDbSchema {
 
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying schemas to database $Database")) {
-                # Create the user defined table types
+
+                # Create the schemas
                 foreach ($object in $schemas) {
                     $objectStep++
                     $task = "Creating Schema(s)"

@@ -95,12 +95,12 @@ function Copy-DbrDbFunction {
             Stop-PSFFunction -Message "Could not retrieve user defined functions from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        # Filter out the udfs based on schema
+        # Filter out the functions based on schema
         if ($Schema) {
             $functions = $functions | Where-Object SchemaName -eq $Schema
         }
 
-        # Filter out the views based on name
+        # Filter out the functions based on name
         if ($Function) {
             $functions = $functions | Where-Object Name -in $Function
         }

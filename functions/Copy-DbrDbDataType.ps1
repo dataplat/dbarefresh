@@ -45,12 +45,12 @@ function Copy-DbrDbDataType {
     .EXAMPLE
         Copy-DbrDbDataType -SqlInstance sqldb1 -Database DB1
 
-        Copy all the user defined table types from the database
+        Copy all the user defined data types from the database
 
     .EXAMPLE
         Copy-DbrDbDataType -SqlInstance sqldb1 -Database DB1 -View VIEW1, VIEW2
 
-        Copy all the user defined table types from the database with the name VIEW1 and VIEW2
+        Copy all the user defined data types from the database with the name VIEW1 and VIEW2
 
     #>
 
@@ -119,7 +119,8 @@ function Copy-DbrDbDataType {
 
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying user defined data types to database $Database")) {
-                # Create the user defined table types
+
+                # Create the user defined data types
                 foreach ($object in $dataTypes) {
                     $objectStep++
                     $task = "Creating Data Type(s)"
