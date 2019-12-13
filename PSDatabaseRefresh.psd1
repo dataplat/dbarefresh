@@ -46,6 +46,7 @@
 	'Copy-DbrDbFunction',
 	'Copy-DbrDbIndex',
 	'Copy-DbrDbSchema',
+	'Copy-DbrDbStoredProcedure',
 	'Copy-DbrDbTable',
 	'Copy-DbrDbTableType'
 
