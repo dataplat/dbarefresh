@@ -100,12 +100,12 @@ function Copy-DbrDbIndex {
         $sourceTables = @()
         $sourceTables += $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
 
-        # Filter out the stored procedures based on schema
+        # Filter out the indexes based on schema
         if ($Schema) {
             $sourceTables = $sourceTables | Where-Object Schema -eq $Schema
         }
 
-        # Filter out the stored procedures based on name
+        # Filter out the indexes based on name
         if ($Table) {
             $sourceTables = $sourceTables | Where-Object Name -in $Table
         }
