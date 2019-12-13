@@ -48,7 +48,8 @@
 	'Copy-DbrDbSchema',
 	'Copy-DbrDbStoredProcedure',
 	'Copy-DbrDbTable',
-	'Copy-DbrDbTableType'
+	'Copy-DbrDbTableType',
+	'Copy-DbrDbView'
 
 	# Cmdlets to export from this module
 	CmdletsToExport   = ''
