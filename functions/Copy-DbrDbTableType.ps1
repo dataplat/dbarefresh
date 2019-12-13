@@ -128,7 +128,7 @@ function Copy-DbrDbTableType {
                         Id               = ($progressId + 2)
                         ParentId         = ($progressId + 1)
                         Activity         = $task
-                        Status           = "Progress-> Data Type $objectStep of $totalObjects"
+                        Status           = "Progress-> Table Type $objectStep of $totalObjects"
                         PercentComplete  = $($objectStep / $totalObjects * 100)
                         CurrentOperation = $operation
                     }
