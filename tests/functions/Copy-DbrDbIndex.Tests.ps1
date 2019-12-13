@@ -77,11 +77,11 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
         $indexes = @()
         $indexes += $destDb.Tables.Indexes | Sort-Object Schema, Name
 
-        It "Destination database should have data types" {
+        It "Destination database should have indexes" {
             $indexes.Count | Should -BeGreaterThan 0
         }
 
-        It "Destination database should have correct amount of data types" {
+        It "Destination database should have correct amount of indexes" {
             $indexes.Count | Should -Be 5
         }
     }
@@ -120,7 +120,7 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
             EnableException        = $true
         }
 
-        # First copy the tables
+        # Copy the indexes
         Copy-DbrDbIndex @params
 
         $destDb.Tables.Refresh()
@@ -192,5 +192,4 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
         $null = Remove-DbaDatabase -SqlInstance $sourceServer -Database $script:sourcedatabase -Confirm:$false
         $null = Remove-DbaDatabase -SqlInstance $destServer -Database $script:destinationdatabase -Confirm:$false
     }
-
 }
