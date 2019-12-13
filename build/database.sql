@@ -20,15 +20,21 @@ WHERE object_id = OBJECT_ID(N'FK__Table3_Table2')
 GO
 
 -- Dropping procedures
-DROP PROCEDURE IF EXISTS [dbo].[Proc1]
-DROP PROCEDURE IF EXISTS [dbo].[Proc2]
-DROP PROCEDURE IF EXISTS [dbo].[Proc3]
+DROP PROCEDURE IF EXISTS [dbo].[Proc1];
+DROP PROCEDURE IF EXISTS [dbo].[Proc2];
+DROP PROCEDURE IF EXISTS [dbo].[Proc3];
 GO
 
+-- Dropping views
+DROP VIEW IF EXISTS [dbo].[View1];
+DROP VIEW IF EXISTS [dbo].[View2];
+DROP VIEW IF EXISTS [dbo].[View3];
+DROP VIEW IF EXISTS [dbo].[View4];
+
 -- Dropping functions
-DROP FUNCTION IF EXISTS [dbo].[RandomNumberFunction]
-DROP FUNCTION IF EXISTS [dbo].[SayHello]
-DROP FUNCTION IF EXISTS [dbo].[Function1]
+DROP FUNCTION IF EXISTS [dbo].[RandomNumberFunction];
+DROP FUNCTION IF EXISTS [dbo].[SayHello];
+DROP FUNCTION IF EXISTS [dbo].[Function1];
 GO
 
 -- Dropping tables
@@ -134,26 +140,30 @@ CREATE TYPE [dbo].[TableType2] AS TABLE
 GO
 
 -- Create the user defined functions
-CREATE FUNCTION [dbo].[Function1]()
+CREATE FUNCTION [dbo].[Function1]
+()
 RETURNS INT
 AS
 BEGIN
-    RETURN 1
+    RETURN 1;
 END;
 GO
 
-CREATE FUNCTION [dbo].[RandomNumberFunction](@MaxValue INT = NULL)
+CREATE FUNCTION [dbo].[RandomNumberFunction]
+(
+    @MaxValue INT = NULL
+)
 RETURNS INT
 AS
 BEGIN
-    DECLARE @result INT
-    DECLARE @random DECIMAL(18,8)
+    DECLARE @result INT;
+    DECLARE @random DECIMAL(18, 8);
     SELECT @random = RandomResult
-    FROM dbo.RandomNumberView
+    FROM dbo.RandomNumberView;
 
     SELECT @result = ROUND(@random * @MaxValue, 0);
 
-    RETURN @result
+    RETURN @result;
 END;
 GO
 
@@ -194,3 +204,36 @@ CREATE PROCEDURE [dbo].[Proc3]
 AS
 SELECT 'Proc3';
 GO
+
+-- Create views
+CREATE VIEW [dbo].[View1]
+AS
+    SELECT *
+    FROM dbo.Table1;
+GO
+CREATE VIEW [dbo].[View2]
+AS
+    SELECT *
+    FROM dbo.Table2;
+GO
+CREATE VIEW [dbo].[View3]
+AS
+    SELECT *
+    FROM dbo.Table3;
+GO
+CREATE VIEW [dbo].[View4]
+AS
+    SELECT T3.id,
+        T3.column1 AS [C11],
+        T3.column2 AS [C12],
+        T3.table2id AS [T2ID],
+        T2.column1 AS [C21],
+        T2.column2 AS [C22],
+        T2.table1id AS [T3ID]
+    FROM dbo.Table3 AS T3
+        INNER JOIN dbo.Table2 AS T2
+        ON T2.id = T3.table2id;
+GO
+
+
+
