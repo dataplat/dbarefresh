@@ -14,26 +14,47 @@ foreach ($item in $json.databases) {
         $filters = @()
         foreach ($column in $table.columns) {
 
-
             if (-not $null -eq $column.filter) {
+                $compareOperator = $null
+                $values = $null
+                if (($column.filter.values).Count -ge 2) {
+                    $compareType = "IN"
+                }
+                else {
+                    switch ($column.filter.comparison) {
+                        { $_ -in "eq", "=" } {
+                            $compareOperator = '='
+                        }
+                        "in" {
+                            $compareOperator = 'IN'
+                        }
+                        { $_ -in "le", "<=" } {
+                            $compareOperator = '<='
+                        }
+                        { $_ -in "lt", "<" } {
+                            $compareOperator = '<'
+                        }
+                        { $_ -in "ge", ">=" } {
+                            $compareOperator = '>='
+                        }
+                        { $_ -in "gt", ">" } {
+                            $compareOperator = '>'
+                        }
+                        { $_ -in "like", "*" } {
+                            $compareOperator = 'LIKE'
+                        }
+                        default {
+                            $compareOperator = '='
+                        }
+                    }
+                }
+
                 switch ($column.filter.datatype) {
                     "int" {
-                        if ($column.filter.values.count -ge 2) {
-                            $filters += "[$($column.name)] IN ($($column.filter.values -join ","))"
-                        }
-                        else {
-                            $filters += "[$($column.name)] = $($column.filter.values)"
-                        }
-
+                        $filters += "[$($column.name)] $($compareOperator) ($($column.filter.values -join ","))"
                     }
                     "varchar" {
-                        if ($column.filter.values.count -ge 2) {
-                            $filters += "[$($column.name)] IN ('$($column.filter.values -join "','")')"
-                        }
-                        else {
-                            $filters += "[$($column.name)] = '$($column.filter.values)'"
-                        }
-
+                        $filters += "[$($column.name)] $($compareOperator) ('$($column.filter.values -join "','")')"
                     }
                 }
             }
