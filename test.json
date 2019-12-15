@@ -13,6 +13,8 @@
                             "name": "id",
                             "filter": {
                                 "datatype": "int",
+                                "type": "static",
+                                "comparison": "in",
                                 "values": [
                                     1,
                                     2,
@@ -32,6 +34,8 @@
                             "name": "column2",
                             "filter": {
                                 "datatype": "varchar",
+                                "type": "static",
+                                "comparison": "in",
                                 "values": [
                                     "value1",
                                     "value2"
@@ -42,6 +46,8 @@
                             "name": "column3",
                             "filter": {
                                 "datatype": "varchar",
+                                "type": "static",
+                                "comparison": "eq",
                                 "values": [
                                     "value3"
                                 ]
@@ -58,6 +64,8 @@
                             "name": "id",
                             "filter": {
                                 "datatype": "int",
+                                "type": "static",
+                                "comparison": "eq",
                                 "values": [
                                     1
                                 ]
@@ -71,6 +79,8 @@
                             "name": "column3",
                             "filter": {
                                 "datatype": "varchar",
+                                "type": "static",
+                                "comparison": "eq",
                                 "values": [
                                     "value3"
                                 ]
@@ -93,6 +103,8 @@
                             "name": "id",
                             "filter": {
                                 "datatype": "int",
+                                "type": "static",
+                                "comparison": "eq",
                                 "values": [
                                     1
                                 ]
@@ -148,6 +160,8 @@
                             "name": "column2",
                             "filter": {
                                 "datatype": "varchar",
+                                "type": "static",
+                                "comparison": "eq",
                                 "values": [
                                     "value3"
                                 ]
