@@ -1,9 +1,9 @@
 <#
     .SYNOPSIS
-        Read the configuration file
+        Read the configuration file en convert it to usable objects
 
     .DESCRIPTION
-        Read the configuration file and return the objects to be processed
+        Read the configuration file and return the objects to be processed in a form that easy accessible for PowerShell
 
     .PARAMETER FilePath
         Path to the file
@@ -20,24 +20,108 @@
     #>
 
 function ConvertFrom-DbrConfig {
+
+    [CmdLetBinding()]
+
     param(
         [Parameter(Mandatory = $true)]
         [string[]]$FilePath,
         [switch]$EnableException
     )
 
-    if (-not (Test-Path -Path $FilePath)) {
-        Stop-PSFFunction -Message "Could not find configuration file" -Target $Path -EnableException:$EnableException
-        return
+    begin {
+        if (-not (Test-Path -Path $FilePath)) {
+            Stop-PSFFunction -Message "Could not find configuration file" -Target $Path -EnableException:$EnableException
+            return
+        }
+
+        try {
+            $objects = Get-Content -Path $FilePath -Raw | ConvertFrom-Json -ErrorAction Stop
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not read configuration file" -ErrorRecord $_ -Target $Path
+        }
     }
 
-    try {
-        $json = Get-Content -Path $FilePath -Raw | ConvertFrom-Json -ErrorAction Stop
-    }
-    catch {
-        Stop-PSFFunction -Message "Could not read configuration file" -ErrorRecord $_ -Target $Path
+    process {
+        if (Test-PSFFunctionInterrupt) { return }
+
+        foreach ($item in $objects.databases) {
+            foreach ($table in $item.tables) {
+                if ($null -eq $table.query) {
+                    $columns = "[$($table.columns.name -join '],[')]"
+
+                    $query = "SELECT $($columns) FROM [$($table.schema)].[$($table.name)] "
+
+                    $filters = @()
+
+                    foreach ($column in $table.columns) {
+                        switch ($column.filter.type) {
+                            "static" {
+                                if (-not $null -eq $column.filter) {
+                                    $compareOperator = $null
+
+                                    if (($column.filter.values).Count -ge 2) {
+                                        $compareOperator = "IN"
+                                    }
+                                    else {
+                                        switch ($column.filter.comparison) {
+                                            { $_ -in "eq", "=" } {
+                                                $compareOperator = '='
+                                            }
+                                            "in" {
+                                                $compareOperator = 'IN'
+                                            }
+                                            { $_ -in "le", "<=" } {
+                                                $compareOperator = '<='
+                                            }
+                                            { $_ -in "lt", "<" } {
+                                                $compareOperator = '<'
+                                            }
+                                            { $_ -in "ge", ">=" } {
+                                                $compareOperator = '>='
+                                            }
+                                            { $_ -in "gt", ">" } {
+                                                $compareOperator = '>'
+                                            }
+                                            { $_ -in "like", "*" } {
+                                                $compareOperator = 'LIKE'
+                                            }
+                                            default {
+                                                $compareOperator = '='
+                                            }
+                                        }
+                                    }
+
+                                    switch ($column.datatype) {
+                                        "int" {
+                                            $filters += "[$($column.name)] $($compareOperator) ($($column.filter.values -join ","))"
+                                        }
+                                        "varchar" {
+                                            $filters += "[$($column.name)] $($compareOperator) ('$($column.filter.values -join "','")')"
+                                        }
+                                    }
+                                }
+                            }
+                            "query" {
+                                $filters += "[$($column.name)] In ($($column.filter.query))"
+                            }
+                        }
+                    }
+
+                    if ($filters.Count -ge 1) {
+                        $query += "WHERE $($filters -join ' AND ')"
+                    }
+
+                    $table.query = $query
+                }
+            }
+        }
     }
 
-    $json
+    end {
+        if (Test-PSFFunctionInterrupt) { return }
 
+        return $objects
+    }
 }
