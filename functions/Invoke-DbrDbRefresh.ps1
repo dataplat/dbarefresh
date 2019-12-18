@@ -1,4 +1,3 @@
-Clear-Host
 
 $json = Get-Content -Path ".\test.json" -Raw | ConvertFrom-Json
 
