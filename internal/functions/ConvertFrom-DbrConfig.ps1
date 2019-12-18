@@ -25,7 +25,7 @@ function ConvertFrom-DbrConfig {
 
     param(
         [Parameter(Mandatory = $true)]
-        [string[]]$FilePath,
+        [string]$FilePath,
         [switch]$EnableException
     )
 
@@ -33,6 +33,14 @@ function ConvertFrom-DbrConfig {
         if (-not (Test-Path -Path $FilePath)) {
             Stop-PSFFunction -Message "Could not find configuration file" -Target $Path -EnableException:$EnableException
             return
+        }
+
+        $jsonErrors = @()
+        $jsonErrors += Test-DbrConfig -FilePath $FilePath
+
+        if ($jsonErrors.Count -ge 1) {
+            Stop-PSFFunction -Message "Found $($jsonErrors.Count) error(s) in configuration file"
+            return $jsonErrors
         }
 
         try {
