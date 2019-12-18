@@ -17,8 +17,9 @@ foreach ($item in $json.databases) {
             if (-not $null -eq $column.filter) {
                 $compareOperator = $null
                 $values = $null
+                $values
                 if (($column.filter.values).Count -ge 2) {
-                    $compareType = "IN"
+                    $compareOperator = "IN"
                 }
                 else {
                     switch ($column.filter.comparison) {
