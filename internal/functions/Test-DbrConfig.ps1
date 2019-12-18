@@ -56,20 +56,20 @@ function Test-DbrConfig {
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }
     process {
-        if (Test-FunctionInterrupt) { return }
+        if (Test-PSFFunctionInterrupt) { return }
 
         foreach ($database in $json.databases) {
             # Test the database properties
             $dbProperties = $database | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
             $compareResult = Compare-Object -ReferenceObject $requiredDatabaseProperties -DifferenceObject $dbProperties
 
-            if ($null -eq $compareResult) {
+            if ($null -ne $compareResult) {
                 if ($compareResult.SideIndicator -contains "<=") {
                     [PSCustomObject]@{
                         Table  = $table.Name
                         Column = $column.Name
                         Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                        Error  = "The column does not contain all the required properties. Please check the column "
+                        Error  = "The database property does not contain all the required properties"
                     }
                 }
 
@@ -78,7 +78,7 @@ function Test-DbrConfig {
                         Table  = $table.Name
                         Column = $column.Name
                         Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                        Error  = "The column contains a property that is not in the required properties. Please check the column"
+                        Error  = "The database property contains a property that is not in the required properties"
                     }
                 }
             }
@@ -94,7 +94,7 @@ function Test-DbrConfig {
                             Table  = $table.Name
                             Column = $column.Name
                             Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                            Error  = "The column does not contain all the required properties. Please check the column "
+                            Error  = "The table property does not contain all the required properties"
                         }
                     }
 
@@ -103,7 +103,7 @@ function Test-DbrConfig {
                             Table  = $table.Name
                             Column = $column.Name
                             Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                            Error  = "The column contains a property that is not in the required properties. Please check the column"
+                            Error  = "The table property contains a property that is not in the required properties"
                         }
                     }
                 }
@@ -119,7 +119,7 @@ function Test-DbrConfig {
                                 Table  = $table.Name
                                 Column = $column.Name
                                 Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                                Error  = "The column does not contain all the required properties. Please check the column "
+                                Error  = "The column property does not contain all the required properties"
                             }
                         }
 
@@ -128,7 +128,7 @@ function Test-DbrConfig {
                                 Table  = $table.Name
                                 Column = $column.Name
                                 Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                                Error  = "The column contains a property that is not in the required properties. Please check the column"
+                                Error  = "The column property contains a property that is not in the required properties"
                             }
                         }
                     }
@@ -139,7 +139,7 @@ function Test-DbrConfig {
                             Table  = $table.Name
                             Column = $column.Name
                             Value  = $column.datatype
-                            Error  = "$($column.datatype) is not a supported data type "
+                            Error  = "$($column.datatype) is not a supported data type"
                         }
                     }
                 }
