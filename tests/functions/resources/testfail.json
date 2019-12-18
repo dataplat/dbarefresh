@@ -1,7 +1,9 @@
 {
     "databases": [
         {
+            "sourceinstance": "localhost",
             "sourcedatabas": "DB1",
+            "destinationinstance": "localhost",
             "destinationdatabase": "DB1",
             "tables": [
                 {
@@ -92,7 +94,9 @@
             ]
         },
         {
+            "sourceinstance": "localhost",
             "sourcedatabase": "DB2",
+            "destinationinstance": "localhost",
             "destinationdatabase": "DB2",
             "tables": [
                 {
