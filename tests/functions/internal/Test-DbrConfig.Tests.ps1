@@ -1,13 +1,11 @@
 $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
-. "$PSScriptRoot\constants.ps1"
+. "$PSScriptRoot\..\constants.ps1"
 
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
-        [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        $knownParameters = 'FilePath', 'EnableException'
-        $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
-        It "Should only contain our specific parameters" {
-            (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
+        It "Should have the correct parameters" {
+            Get-Command $CommandName | Should -HaveParameter FilePath -Type string -Mandatory
+            Get-Command $CommandName | Should -HaveParameter EnableException -Type switch
         }
     }
 }
@@ -15,16 +13,16 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
 
     BeforeAll {
-        $jsonFilePathFail = "$PSScriptRoot\resources\testfail.json"
-        $jsonFilePathSuccess = "$PSScriptRoot\resources\testsuccess.json"
+        $jsonFilePathFail = "$PSScriptRoot\..\resources\testfail.json"
+        $jsonFilePathSuccess = "$PSScriptRoot\..\resources\testsuccess.json"
     }
 
     Context "Test for errors" {
 
         It "Should generate FilePath error" {
-            { Test-DbrConfig -FilePath ($jsonFilePathFail.Substring(0, $jsonFilePathFail.Length - 1)) -EnableException } | Should -Throw "Could not find config file $PSScriptRoot\resources\testfail.jso"
+            $failingfilepath = ($jsonFilePathFail.Substring(0, $jsonFilePathFail.Length - 1))
+            { Test-DbrConfig -FilePath $failingfilepath -EnableException } | Should -Throw "Could not find configuration file $($failingfilepath)"
         }
-
     }
 
     Context "Test successful JSON file" {
