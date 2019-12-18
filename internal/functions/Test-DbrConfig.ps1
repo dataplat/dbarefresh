@@ -40,7 +40,7 @@ function Test-DbrConfig {
 
     begin {
         if (-not (Test-Path -Path $FilePath)) {
-            Stop-PSFFunction -Message "Could not find config file $FilePath" -Target $FilePath -EnableException:$EnableException
+            Stop-PSFFunction -Message "Could not find configuration file $FilePath" -Target $FilePath -EnableException:$EnableException
             return
         }
 
@@ -54,7 +54,7 @@ function Test-DbrConfig {
 
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
 
-        $requiredDatabaseProperties = 'sourcedatabase', 'destinationdatabase', 'tables'
+        $requiredDatabaseProperties = 'sourceinstance', 'sourcedatabase', 'destinationinstance', 'destinationdatabase', 'tables'
         $requiredTableProperties = 'fullname', 'schema', 'name', 'columns'
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }
@@ -65,24 +65,32 @@ function Test-DbrConfig {
         foreach ($database in $json.databases) {
             # Test the database properties
             $dbProperties = $database | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
-            $compareResult = Compare-Object -ReferenceObject $requiredDatabaseProperties -DifferenceObject $dbProperties
+            $compareResultDb = Compare-Object -ReferenceObject $requiredDatabaseProperties -DifferenceObject $dbProperties
 
-            if ($null -ne $compareResult) {
-                if ($compareResult.SideIndicator -contains "<=") {
+            if ($null -ne $compareResultDb) {
+                if ($compareResultDb.SideIndicator -contains "<=") {
                     [PSCustomObject]@{
-                        Table  = $table.Name
-                        Column = $column.Name
-                        Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                        Error  = "The database property does not contain all the required properties"
+                        SourceInstance      = $database.sourceinstance
+                        SourceDatabase      = $database.sourcedatabase
+                        DestinationInstance = $database.destinationinstance
+                        DestinationDatabase = $database.destinationdatabase
+                        Table               = $null
+                        Column              = $null
+                        Value               = ($compareResultDb | Where-Object SideIndicator -eq "<=").InputObject -join ","
+                        Error               = "The database property does not contain all the required properties"
                     }
                 }
 
-                if ($compareResult.SideIndicator -contains "=>") {
+                if ($compareResultDb.SideIndicator -contains "=>") {
                     [PSCustomObject]@{
-                        Table  = $table.Name
-                        Column = $column.Name
-                        Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                        Error  = "The database property contains a property that is not in the required properties"
+                        SourceInstance      = $database.sourceinstance
+                        SourceDatabase      = $database.sourcedatabase
+                        DestinationInstance = $database.destinationinstance
+                        DestinationDatabase = $database.destinationdatabase
+                        Table               = $null
+                        Column              = $null
+                        Value               = ($compareResultDb | Where-Object SideIndicator -eq "=>").InputObject -join ","
+                        Error               = "The database property contains a property that is not in the required properties"
                     }
                 }
             }
@@ -90,24 +98,32 @@ function Test-DbrConfig {
             foreach ($table in $database.Tables) {
                 # Test the table properties
                 $tableProperties = $table | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
-                $compareResult = Compare-Object -ReferenceObject $requiredTableProperties -DifferenceObject $tableProperties
+                $compareResultTable = Compare-Object -ReferenceObject $requiredTableProperties -DifferenceObject $tableProperties
 
-                if ($null -eq $compareResult) {
-                    if ($compareResult.SideIndicator -contains "<=") {
+                if ($null -eq $compareResultTable) {
+                    if ($compareResultTable.SideIndicator -contains "<=") {
                         [PSCustomObject]@{
-                            Table  = $table.Name
-                            Column = $column.Name
-                            Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                            Error  = "The table property does not contain all the required properties"
+                            SourceInstance      = $database.sourceinstance
+                            SourceDatabase      = $database.sourcedatabase
+                            DestinationInstance = $database.destinationinstance
+                            DestinationDatabase = $database.destinationdatabase
+                            Table               = $table.Name
+                            Column              = $column.Name
+                            Value               = ($compareResultTable | Where-Object SideIndicator -eq "<=").InputObject -join ","
+                            Error               = "The table property does not contain all the required properties"
                         }
                     }
 
-                    if ($compareResult.SideIndicator -contains "=>") {
+                    if ($compareResultTable.SideIndicator -contains "=>") {
                         [PSCustomObject]@{
-                            Table  = $table.Name
-                            Column = $column.Name
-                            Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                            Error  = "The table property contains a property that is not in the required properties"
+                            SourceInstance      = $database.sourceinstance
+                            SourceDatabase      = $database.sourcedatabase
+                            DestinationInstance = $database.destinationinstance
+                            DestinationDatabase = $database.destinationdatabase
+                            Table               = $table.Name
+                            Column              = $column.Name
+                            Value               = ($compareResultTable | Where-Object SideIndicator -eq "=>").InputObject -join ","
+                            Error               = "The table property contains a property that is not in the required properties"
                         }
                     }
                 }
@@ -115,24 +131,32 @@ function Test-DbrConfig {
                 foreach ($column in $table.Columns) {
                     # Test the column properties
                     $columnProperties = $column | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
-                    $compareResult = Compare-Object -ReferenceObject $requiredColumnProperties -DifferenceObject $columnProperties
+                    $compareResultColumn = Compare-Object -ReferenceObject $requiredColumnProperties -DifferenceObject $columnProperties
 
-                    if ($null -ne $compareResult) {
-                        if ($compareResult.SideIndicator -contains "<=") {
+                    if ($null -ne $compareResultColumn) {
+                        if ($compareResultColumn.SideIndicator -contains "<=") {
                             [PSCustomObject]@{
-                                Table  = $table.Name
-                                Column = $column.Name
-                                Value  = ($compareResult | Where-Object SideIndicator -eq "<=").InputObject -join ","
-                                Error  = "The column property does not contain all the required properties"
+                                SourceInstance      = $database.sourceinstance
+                                SourceDatabase      = $database.sourcedatabase
+                                DestinationInstance = $database.destinationinstance
+                                DestinationDatabase = $database.destinationdatabase
+                                Table               = $table.Name
+                                Column              = $column.Name
+                                Value               = ($compareResultColumn | Where-Object SideIndicator -eq "<=").InputObject -join ","
+                                Error               = "The column property does not contain all the required properties"
                             }
                         }
 
-                        if ($compareResult.SideIndicator -contains "=>") {
+                        if ($compareResultColumn.SideIndicator -contains "=>") {
                             [PSCustomObject]@{
-                                Table  = $table.Name
-                                Column = $column.Name
-                                Value  = ($compareResult | Where-Object SideIndicator -eq "=>").InputObject -join ","
-                                Error  = "The column property contains a property that is not in the required properties"
+                                SourceInstance      = $database.sourceinstance
+                                SourceDatabase      = $database.sourcedatabase
+                                DestinationInstance = $database.destinationinstance
+                                DestinationDatabase = $database.destinationdatabase
+                                Table               = $table.Name
+                                Column              = $column.Name
+                                Value               = ($compareResultColumn | Where-Object SideIndicator -eq "=>").InputObject -join ","
+                                Error               = "The column property contains a property that is not in the required properties"
                             }
                         }
                     }
@@ -140,10 +164,14 @@ function Test-DbrConfig {
                     # Test column type
                     if ($column.datatype -notin $supportedDataTypes) {
                         [PSCustomObject]@{
-                            Table  = $table.Name
-                            Column = $column.Name
-                            Value  = $column.datatype
-                            Error  = "$($column.datatype) is not a supported data type"
+                            SourceInstance      = $database.sourceinstance
+                            SourceDatabase      = $database.sourcedatabase
+                            DestinationInstance = $database.destinationinstance
+                            DestinationDatabase = $database.destinationdatabase
+                            Table               = $table.Name
+                            Column              = $column.Name
+                            Value               = $column.datatype
+                            Error               = "$($column.datatype) is not a supported data type"
                         }
                     }
                 }
