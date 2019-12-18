@@ -17,7 +17,13 @@ Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
     BeforeAll {
         $jsonFilePathFail = "$PSScriptRoot\resources\testfail.json"
         $jsonFilePathSuccess = "$PSScriptRoot\resources\testsuccess.json"
+    }
 
+    Context "Test for errors" {
+
+        It "Should generate FilePath error" {
+            { Test-DbrConfig -FilePath ($jsonFilePathFail.Substring(0, $jsonFilePathFail.Length - 1)) -EnableException } | Should -Throw "Could not find config file $PSScriptRoot\resources\testfail.jso"
+        }
 
     }
 
