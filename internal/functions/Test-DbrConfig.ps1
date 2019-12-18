@@ -96,7 +96,7 @@ function Test-DbrConfig {
                 }
             }
 
-            foreach ($table in $database.Tables) {
+            foreach ($table in $database.tables) {
                 # Test the table properties
                 $tableProperties = $table | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
                 $compareResultTable = Compare-Object -ReferenceObject $requiredTableProperties -DifferenceObject $tableProperties
@@ -129,7 +129,7 @@ function Test-DbrConfig {
                     }
                 }
 
-                foreach ($column in $table.Columns) {
+                foreach ($column in $table.columns) {
                     # Test the column properties
                     $columnProperties = $column | Get-Member | Where-Object MemberType -eq NoteProperty | Select-Object Name -ExpandProperty Name
                     $compareResultColumn = Compare-Object -ReferenceObject $requiredColumnProperties -DifferenceObject $columnProperties
@@ -198,15 +198,17 @@ function Test-DbrConfig {
                             }
                         }
 
-                        [PSCustomObject]@{
-                            SourceInstance      = $database.sourceinstance
-                            SourceDatabase      = $database.sourcedatabase
-                            DestinationInstance = $database.destinationinstance
-                            DestinationDatabase = $database.destinationdatabase
-                            Table               = $table.Name
-                            Column              = $column.Name
-                            Value               = $column.datatype
-                            Error               = $error
+                        if ($error) {
+                            [PSCustomObject]@{
+                                SourceInstance      = $database.sourceinstance
+                                SourceDatabase      = $database.sourcedatabase
+                                DestinationInstance = $database.destinationinstance
+                                DestinationDatabase = $database.destinationdatabase
+                                Table               = $table.Name
+                                Column              = $column.Name
+                                Value               = $column.datatype
+                                Error               = $error
+                            }
                         }
                     }
                 }
