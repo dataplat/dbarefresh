@@ -49,7 +49,8 @@
 	'Copy-DbrDbStoredProcedure',
 	'Copy-DbrDbTable',
 	'Copy-DbrDbTableType',
-	'Copy-DbrDbView'
+	'Copy-DbrDbView',
+	'Invoke-DbrDbRefresh'
 
 	# Cmdlets to export from this module
 	CmdletsToExport   = ''
