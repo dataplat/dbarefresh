@@ -29,15 +29,18 @@ function Test-DbrConfig {
 
         Test the configuration file
     #>
+
     [CmdletBinding()]
+
     param (
         [parameter(Mandatory)]
         [string]$FilePath,
         [switch]$EnableException
     )
+
     begin {
         if (-not (Test-Path -Path $FilePath)) {
-            Stop-Function -Message "Could not find config file $FilePath" -Target $FilePath
+            Stop-PSFFunction -Message "Could not find config file $FilePath" -Target $FilePath -EnableException:$EnableException
             return
         }
 
@@ -46,7 +49,7 @@ function Test-DbrConfig {
             $json = Get-Content -Path $FilePath -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
         }
         catch {
-            Stop-Function -Message "Could not parse config file" -ErrorRecord $_ -Target $FilePath
+            Stop-PSFFunction -Message "Could not parse config file" -ErrorRecord $_ -Target $FilePath -EnableException:$EnableException
         }
 
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
@@ -55,6 +58,7 @@ function Test-DbrConfig {
         $requiredTableProperties = 'fullname', 'schema', 'name', 'columns'
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }
+
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
