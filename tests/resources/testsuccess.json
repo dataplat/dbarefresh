@@ -55,7 +55,8 @@
                                 ]
                             }
                         }
-                    ]
+                    ],
+                    "query": null
                 },
                 {
                     "fullname": "dbo.Table2",
@@ -66,11 +67,8 @@
                             "name": "id",
                             "datatype": "int",
                             "filter": {
-                                "type": "static",
-                                "comparison": "eq",
-                                "values": [
-                                    1
-                                ]
+                                "type": "query",
+                                "query": "SELECT id FROM dbo.table1"
                             }
                         },
                         {
@@ -89,7 +87,8 @@
                                 ]
                             }
                         }
-                    ]
+                    ],
+                    "query": null
                 }
             ]
         },
@@ -130,7 +129,8 @@
                             "datatype": "varchar",
                             "filter": null
                         }
-                    ]
+                    ],
+                    "query": null
                 },
                 {
                     "fullname": "dbo.Table2",
@@ -152,7 +152,8 @@
                             "datatype": "varchar",
                             "filter": null
                         }
-                    ]
+                    ],
+                    "query": null
                 },
                 {
                     "fullname": "dbo.Table3",
@@ -180,7 +181,8 @@
                                 ]
                             }
                         }
-                    ]
+                    ],
+                    "query": null
                 }
             ]
         }
