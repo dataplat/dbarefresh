@@ -53,9 +53,10 @@ function Test-DbrConfig {
         }
 
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
+        $supportedOperators = 'eq', '=', 'in', 'le', '<=', 'lt', '<', 'ge', '>=', 'gt', '>', 'like'
 
         $requiredDatabaseProperties = 'sourceinstance', 'sourcedatabase', 'destinationinstance', 'destinationdatabase', 'tables'
-        $requiredTableProperties = 'fullname', 'schema', 'name', 'columns'
+        $requiredTableProperties = 'fullname', 'schema', 'name', 'columns', 'query'
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }
 
@@ -172,6 +173,40 @@ function Test-DbrConfig {
                             Column              = $column.Name
                             Value               = $column.datatype
                             Error               = "$($column.datatype) is not a supported data type"
+                        }
+                    }
+
+                    if ($null -ne $column.filter) {
+                        $error = $null
+
+                        switch ($column.filter.type) {
+                            "static" {
+                                if (-not $column.filter.comparison) {
+                                    $error = "Comparison operator should be set when using static filter"
+                                }
+                                elseif ($column.filter.comparison -notin $supportedOperators) {
+                                    $error = "Comparison operator '$($column.filter.comparison)' is not supported"
+                                }
+                            }
+                            "query" {
+                                if (-not $column.filter.query) {
+                                    $error = "Missing query for column"
+                                }
+                                elseif (($column.filter.query).length -lt 1) {
+                                    $error = "Empty query for column"
+                                }
+                            }
+                        }
+
+                        [PSCustomObject]@{
+                            SourceInstance      = $database.sourceinstance
+                            SourceDatabase      = $database.sourcedatabase
+                            DestinationInstance = $database.destinationinstance
+                            DestinationDatabase = $database.destinationdatabase
+                            Table               = $table.Name
+                            Column              = $column.Name
+                            Value               = $column.datatype
+                            Error               = $error
                         }
                     }
                 }
