@@ -40,7 +40,7 @@ function Test-DbrConfig {
 
     begin {
         if (-not (Test-Path -Path $FilePath)) {
-            Stop-PSFFunction -Message "Could not find configuration file $FilePath" -Target $FilePath -EnableException:$EnableException
+            Stop-PSFFunction -Message "Could not find configuration file" -Target $FilePath -EnableException:$EnableException
             return
         }
 
@@ -49,7 +49,7 @@ function Test-DbrConfig {
             $json = Get-Content -Path $FilePath -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
         }
         catch {
-            Stop-PSFFunction -Message "Could not parse config file" -ErrorRecord $_ -Target $FilePath -EnableException:$EnableException
+            Stop-PSFFunction -Message "Could not parse configuration file" -ErrorRecord $_ -Target $FilePath -EnableException:$EnableException
         }
 
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
