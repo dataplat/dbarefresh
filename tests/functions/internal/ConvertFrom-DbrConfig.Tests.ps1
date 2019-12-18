@@ -15,15 +15,15 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
 
     BeforeAll {
-        $jsonFilePathFail = "$PSScriptRoot\..\resources\testfail.json"
-        $jsonFilePathSuccess = "$PSScriptRoot\..\resources\testsuccess.json"
+        $jsonFilePathFail = "$PSScriptRoot\..\..\resources\testfail.json"
+        $jsonFilePathSuccess = "$PSScriptRoot\..\..\resources\testsuccess.json"
     }
 
     Context "Test for errors" {
 
         It "Should generate FilePath error" {
             $failingfilepath = ($jsonFilePathFail.Substring(0, $jsonFilePathFail.Length - 1))
-            { Test-DbrConfig -FilePath $failingfilepath -EnableException } | Should -Throw "Could not find configuration file $($failingfilepath)"
+            { ConvertFrom-DbrConfig -FilePath $failingfilepath -EnableException } | Should -Throw "Could not find configuration file"
         }
     }
 
