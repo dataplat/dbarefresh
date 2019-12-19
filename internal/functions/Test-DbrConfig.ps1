@@ -55,7 +55,7 @@ function Test-DbrConfig {
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
         $supportedOperators = 'eq', '=', 'in', 'le', '<=', 'lt', '<', 'ge', '>=', 'gt', '>', 'like'
 
-        $requiredDatabaseProperties = 'sourceinstance', 'sourcedatabase', 'destinationinstance', 'destinationdatabase', 'tables'
+        $requiredDatabaseProperties = 'sourceinstance', 'destinationinstance', 'database', 'tables'
         $requiredTableProperties = 'fullname', 'schema', 'name', 'columns', 'query'
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }
@@ -72,9 +72,8 @@ function Test-DbrConfig {
                 if ($compareResultDb.SideIndicator -contains "<=") {
                     [PSCustomObject]@{
                         SourceInstance      = $database.sourceinstance
-                        SourceDatabase      = $database.sourcedatabase
                         DestinationInstance = $database.destinationinstance
-                        DestinationDatabase = $database.destinationdatabase
+                        Databas             = $database.destinationdatabase
                         Table               = $null
                         Column              = $null
                         Value               = ($compareResultDb | Where-Object SideIndicator -eq "<=").InputObject -join ","
@@ -85,9 +84,8 @@ function Test-DbrConfig {
                 if ($compareResultDb.SideIndicator -contains "=>") {
                     [PSCustomObject]@{
                         SourceInstance      = $database.sourceinstance
-                        SourceDatabase      = $database.sourcedatabase
                         DestinationInstance = $database.destinationinstance
-                        DestinationDatabase = $database.destinationdatabase
+                        Databas             = $database.destinationdatabase
                         Table               = $null
                         Column              = $null
                         Value               = ($compareResultDb | Where-Object SideIndicator -eq "=>").InputObject -join ","
@@ -105,9 +103,8 @@ function Test-DbrConfig {
                     if ($compareResultTable.SideIndicator -contains "<=") {
                         [PSCustomObject]@{
                             SourceInstance      = $database.sourceinstance
-                            SourceDatabase      = $database.sourcedatabase
                             DestinationInstance = $database.destinationinstance
-                            DestinationDatabase = $database.destinationdatabase
+                            Databas             = $database.destinationdatabase
                             Table               = $table.Name
                             Column              = $column.Name
                             Value               = ($compareResultTable | Where-Object SideIndicator -eq "<=").InputObject -join ","
@@ -118,9 +115,8 @@ function Test-DbrConfig {
                     if ($compareResultTable.SideIndicator -contains "=>") {
                         [PSCustomObject]@{
                             SourceInstance      = $database.sourceinstance
-                            SourceDatabase      = $database.sourcedatabase
                             DestinationInstance = $database.destinationinstance
-                            DestinationDatabase = $database.destinationdatabase
+                            Databas             = $database.destinationdatabase
                             Table               = $table.Name
                             Column              = $column.Name
                             Value               = ($compareResultTable | Where-Object SideIndicator -eq "=>").InputObject -join ","
@@ -138,9 +134,8 @@ function Test-DbrConfig {
                         if ($compareResultColumn.SideIndicator -contains "<=") {
                             [PSCustomObject]@{
                                 SourceInstance      = $database.sourceinstance
-                                SourceDatabase      = $database.sourcedatabase
                                 DestinationInstance = $database.destinationinstance
-                                DestinationDatabase = $database.destinationdatabase
+                                Databas             = $database.destinationdatabase
                                 Table               = $table.Name
                                 Column              = $column.Name
                                 Value               = ($compareResultColumn | Where-Object SideIndicator -eq "<=").InputObject -join ","
@@ -151,9 +146,8 @@ function Test-DbrConfig {
                         if ($compareResultColumn.SideIndicator -contains "=>") {
                             [PSCustomObject]@{
                                 SourceInstance      = $database.sourceinstance
-                                SourceDatabase      = $database.sourcedatabase
                                 DestinationInstance = $database.destinationinstance
-                                DestinationDatabase = $database.destinationdatabase
+                                Databas             = $database.destinationdatabase
                                 Table               = $table.Name
                                 Column              = $column.Name
                                 Value               = ($compareResultColumn | Where-Object SideIndicator -eq "=>").InputObject -join ","
@@ -166,9 +160,8 @@ function Test-DbrConfig {
                     if ($column.datatype -notin $supportedDataTypes) {
                         [PSCustomObject]@{
                             SourceInstance      = $database.sourceinstance
-                            SourceDatabase      = $database.sourcedatabase
                             DestinationInstance = $database.destinationinstance
-                            DestinationDatabase = $database.destinationdatabase
+                            Databas             = $database.destinationdatabase
                             Table               = $table.Name
                             Column              = $column.Name
                             Value               = $column.datatype
@@ -201,9 +194,8 @@ function Test-DbrConfig {
                         if ($error) {
                             [PSCustomObject]@{
                                 SourceInstance      = $database.sourceinstance
-                                SourceDatabase      = $database.sourcedatabase
                                 DestinationInstance = $database.destinationinstance
-                                DestinationDatabase = $database.destinationdatabase
+                                Databas             = $database.destinationdatabase
                                 Table               = $table.Name
                                 Column              = $column.Name
                                 Value               = $column.datatype

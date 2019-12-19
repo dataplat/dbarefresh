@@ -48,9 +48,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         It "Should return the correct databases" {
             $result.databases[1].sourceinstance | Should -Be "localhost"
-            $result.databases[1].sourcedatabase | Should -BeExactly  "DB2"
             $result.databases[1].destinationinstance | Should -Be "localhost"
-            $result.databases[1].destinationdatabase | Should -BeExactly  "DB2"
+            $result.databases[1].database | Should -BeExactly  "DB2"
         }
 
         It "Should have the correct amount of tables" {

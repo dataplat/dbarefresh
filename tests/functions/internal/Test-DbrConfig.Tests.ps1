@@ -44,7 +44,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         It "Should return the correct errors" {
 
-            $result[0].Value | Should -Be "sourcedatabase"
+            $result[0].Value | Should -Be "database"
 
             $result[2].Table | Should -Be "Table1"
             $result[2].Column | Should -Be "column2"
