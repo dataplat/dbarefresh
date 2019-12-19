@@ -177,23 +177,23 @@ function Test-DbrConfig {
                     }
 
                     if ($null -ne $column.filter) {
-                        $error = $null
+                        $errorMessage = $null
 
                         switch ($column.filter.type) {
                             "static" {
                                 if (-not $column.filter.comparison) {
-                                    $error = "Comparison operator should be set when using static filter"
+                                    $errorMessage = "Comparison operator should be set when using static filter"
                                 }
                                 elseif ($column.filter.comparison -notin $supportedOperators) {
-                                    $error = "Comparison operator '$($column.filter.comparison)' is not supported"
+                                    $errorMessage = "Comparison operator '$($column.filter.comparison)' is not supported"
                                 }
                             }
                             "query" {
                                 if (-not $column.filter.query) {
-                                    $error = "Missing query for column"
+                                    $errorMessage = "Missing query for column"
                                 }
                                 elseif (($column.filter.query).length -lt 1) {
-                                    $error = "Empty query for column"
+                                    $errorMessage = "Empty query for column"
                                 }
                             }
                         }
@@ -207,7 +207,7 @@ function Test-DbrConfig {
                                 Table               = $table.Name
                                 Column              = $column.Name
                                 Value               = $column.datatype
-                                Error               = $error
+                                Error               = $errorMessage
                             }
                         }
                     }
