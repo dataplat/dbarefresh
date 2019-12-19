@@ -10,7 +10,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     }
 }
 
-Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
+Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
     BeforeAll {
         $jsonFilePathFail = "$PSScriptRoot\..\..\resources\testfail.json"

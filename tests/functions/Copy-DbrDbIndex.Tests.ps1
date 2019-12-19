@@ -18,7 +18,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     }
 }
 
-Describe "$CommandName Integration Tests" -Tag 'UnitTests' {
+Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
     BeforeAll {
         $sourceServer = Connect-DbaInstance -SqlInstance $script:instance1
         $destServer = Connect-DbaInstance -SqlInstance $script:instance2
