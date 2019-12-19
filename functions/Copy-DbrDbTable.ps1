@@ -66,7 +66,7 @@ function Copy-DbrDbTable {
         [parameter(Mandatory)]
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$Table,
         [switch]$EnableException
     )
@@ -98,7 +98,7 @@ function Copy-DbrDbTable {
 
         # Filter out the tables based on schema
         if ($Schema) {
-            $tables = $tables | Where-Object Schema -eq $Schema
+            $tables = $tables | Where-Object Schema -in $Schema
         }
 
         # Filter out the tables based on name

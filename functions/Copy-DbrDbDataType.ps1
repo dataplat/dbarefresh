@@ -66,7 +66,7 @@ function Copy-DbrDbDataType {
         [parameter(Mandatory)]
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$DataType,
         [switch]$EnableException
     )

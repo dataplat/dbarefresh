@@ -69,7 +69,7 @@ function Copy-DbrDbForeignKey {
         [parameter(Mandatory)]
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$Table,
         [string[]]$ForeignKey,
         [switch]$EnableException
@@ -101,7 +101,7 @@ function Copy-DbrDbForeignKey {
 
         # Filter out the foreign keys based on schema
         if ($Schema) {
-            $sourceTables = $sourceTables | Where-Object Schema -eq $Schema
+            $sourceTables = $sourceTables | Where-Object Schema -in $Schema
         }
 
         # Filter out the foreign keys based on table

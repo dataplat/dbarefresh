@@ -69,7 +69,7 @@ function Copy-DbrDbIndex {
         [parameter(Mandatory)]
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$Table,
         [string[]]$Index,
         [switch]$EnableException
@@ -102,7 +102,7 @@ function Copy-DbrDbIndex {
 
         # Filter out the indexes based on schema
         if ($Schema) {
-            $sourceTables = $sourceTables | Where-Object Schema -eq $Schema
+            $sourceTables = $sourceTables | Where-Object Schema -in $Schema
         }
 
         # Filter out the indexes based on name

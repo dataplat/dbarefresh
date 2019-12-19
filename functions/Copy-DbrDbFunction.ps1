@@ -66,7 +66,7 @@ function Copy-DbrDbFunction {
         [parameter(Mandatory)]
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$Function,
         [switch]$EnableException
     )
@@ -97,7 +97,7 @@ function Copy-DbrDbFunction {
 
         # Filter out the functions based on schema
         if ($Schema) {
-            $functions = $functions | Where-Object SchemaName -eq $Schema
+            $functions = $functions | Where-Object SchemaName -in $Schema
         }
 
         # Filter out the functions based on name
