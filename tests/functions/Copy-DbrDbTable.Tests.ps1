@@ -10,7 +10,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
             Get-Command $CommandName | Should -HaveParameter DestinationSqlCredential -Type PSCredential
             Get-Command $CommandName | Should -HaveParameter SourceDatabase -Type string -Mandatory
             Get-Command $CommandName | Should -HaveParameter DestinationDatabase -Type string
-            Get-Command $CommandName | Should -HaveParameter Schema -Type string
+            Get-Command $CommandName | Should -HaveParameter Schema -Type string[]
             Get-Command $CommandName | Should -HaveParameter Table -Type string[]
             Get-Command $CommandName | Should -HaveParameter EnableException -Type switch
         }
