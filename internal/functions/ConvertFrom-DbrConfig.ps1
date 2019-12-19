@@ -112,7 +112,7 @@ function ConvertFrom-DbrConfig {
                                 }
                             }
                             "query" {
-                                $filters += "[$($column.name)] In ($($column.filter.query))"
+                                $filters += "[$($column.name)] IN ($($column.filter.query))"
                             }
                         }
                     }
