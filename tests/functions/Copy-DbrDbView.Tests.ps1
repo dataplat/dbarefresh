@@ -3,11 +3,16 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
-        [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        $knownParameters = 'SourceSqlInstance', 'SourceSqlCredential', 'DestinationSqlInstance', 'DestinationSqlCredential', 'SourceDatabase', 'DestinationDatabase', 'Schema', 'View', 'EnableException'
-        $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
-        It "Should only contain our specific parameters" {
-            (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
+        It "Should have the correct parameters" {
+            Get-Command $CommandName | Should -HaveParameter SourceSqlInstance -Type DbaInstanceParameter -Mandatory
+            Get-Command $CommandName | Should -HaveParameter SourceSqlCredential -Type PSCredential
+            Get-Command $CommandName | Should -HaveParameter DestinationSqlInstance -Type DbaInstanceParameter -Mandatory
+            Get-Command $CommandName | Should -HaveParameter DestinationSqlCredential -Type PSCredential
+            Get-Command $CommandName | Should -HaveParameter SourceDatabase -Type string -Mandatory
+            Get-Command $CommandName | Should -HaveParameter DestinationDatabase -Type string
+            Get-Command $CommandName | Should -HaveParameter Schema -Type string
+            Get-Command $CommandName | Should -HaveParameter View -Type string[]
+            Get-Command $CommandName | Should -HaveParameter EnableException -Type switch
         }
     }
 }
