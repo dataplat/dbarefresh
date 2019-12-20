@@ -97,24 +97,24 @@ function Copy-DbrDbForeignKey {
             Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        $sourceTables = $sourceServer.Databases[$SourceDatabase].Tables
+        [array]$sourceTables = $sourceServer.Databases[$SourceDatabase].Tables
 
         # Filter out the foreign keys based on schema
         if ($Schema) {
-            $sourceTables = $sourceTables | Where-Object Schema -in $Schema
+            [array]$sourceTables = $sourceTables | Where-Object Schema -in $Schema
         }
 
         # Filter out the foreign keys based on table
         if ($Table) {
-            $sourceTables = $sourceTables | Where-Object Name -in $Table
+            [array]$sourceTables = $sourceTables | Where-Object Name -in $Table
         }
 
         # Filter out the foreign keys based on table
         if ($ForeignKey) {
-            $foreignKeys = $sourceTables.ForeignKeys | Where-Object Name -in $ForeignKey
+            [array]$foreignKeys = $sourceTables.ForeignKeys | Where-Object Name -in $ForeignKey
         }
         else {
-            $foreignKeys = $sourceTables.ForeignKeys
+            [array]$foreignKeys = $sourceTables.ForeignKeys
         }
     }
 

@@ -86,8 +86,8 @@ function Copy-DbrDbView {
                 ExcludeSystemObjects = $true
             }
 
-            $views = Get-DbaModule @params
-            $views = $views | Sort-Object SchemaName, Name
+            [array]$views = Get-DbaModule @params
+            [array]$views = $views | Sort-Object SchemaName, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve views from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -97,12 +97,12 @@ function Copy-DbrDbView {
 
         # Filter out the views based on schema
         if ($Schema) {
-            $views = $views | Where-Object SchemaName -in $Schema
+            [array]$views = $views | Where-Object SchemaName -in $Schema
         }
 
         # Filter out the views based on name
         if ($View) {
-            $views = $views | Where-Object Name -in $View
+            [array]$views = $views | Where-Object Name -in $View
         }
     }
 

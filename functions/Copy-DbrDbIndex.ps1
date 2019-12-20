@@ -97,24 +97,24 @@ function Copy-DbrDbIndex {
             Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        $sourceTables = @()
-        $sourceTables += $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
+        [array]$sourceTables = $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
 
         # Filter out the indexes based on schema
         if ($Schema) {
-            $sourceTables = $sourceTables | Where-Object Schema -in $Schema
+            $sourceTables = @()
+            [array]$sourceTables = $sourceTables | Where-Object Schema -in $Schema
         }
 
         # Filter out the indexes based on name
         if ($Table) {
-            $sourceTables = $sourceTables | Where-Object Name -in $Table
+            [array]$sourceTables = $sourceTables | Where-Object Name -in $Table
         }
 
         if ($Index) {
-            $indexes = $sourceTables.Indexes | Where-Object Name -in $Index | Sort-Object Name
+            [array]$indexes = $sourceTables.Indexes | Where-Object Name -in $Index | Sort-Object Name
         }
         else {
-            $indexes = $sourceTables.Indexes | Sort-Object Name
+            [array]$indexes = $sourceTables.Indexes | Sort-Object Name
         }
     }
 

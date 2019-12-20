@@ -78,14 +78,14 @@ function Copy-DbrDbSchema {
 
         try {
             $schemas = @()
-            $schemas += $db.Schemas | Where-Object IsSystemObject -eq $false | Sort-Object Name
+            [array]$schemas += $db.Schemas | Where-Object IsSystemObject -eq $false | Sort-Object Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve schemas from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
         if ($Schema) {
-            $schemas = $schemas | Where-Object Name -in $Schema
+            [array]$schemas = $schemas | Where-Object Name -in $Schema
         }
     }
 

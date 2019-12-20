@@ -88,8 +88,8 @@ function Copy-DbrDbFunction {
         $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
 
         try {
-            $functions = Get-DbaModule @params
-            $functions = $functions | Sort-Object SchemaName, Name
+            [array]$functions = Get-DbaModule @params
+            [array]$functions = $functions | Sort-Object SchemaName, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve user defined functions from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -97,12 +97,12 @@ function Copy-DbrDbFunction {
 
         # Filter out the functions based on schema
         if ($Schema) {
-            $functions = $functions | Where-Object SchemaName -in $Schema
+            [array]$functions = $functions | Where-Object SchemaName -in $Schema
         }
 
         # Filter out the functions based on name
         if ($Function) {
-            $functions = $functions | Where-Object Name -in $Function
+            [array]$functions = $functions | Where-Object Name -in $Function
         }
     }
 

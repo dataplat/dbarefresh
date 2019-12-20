@@ -94,16 +94,16 @@ function Copy-DbrDbTable {
         }
 
         $tables = @()
-        $tables += $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
+        [array]$tables += $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
 
         # Filter out the tables based on schema
         if ($Schema) {
-            $tables = $tables | Where-Object Schema -in $Schema
+            [array]$tables = $tables | Where-Object Schema -in $Schema
         }
 
         # Filter out the tables based on name
         if ($Table) {
-            $tables = $tables | Where-Object Name -in $Table
+            [array]$tables = $tables | Where-Object Name -in $Table
         }
     }
 

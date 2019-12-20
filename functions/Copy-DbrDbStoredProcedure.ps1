@@ -87,8 +87,8 @@ function Copy-DbrDbStoredProcedure {
                 ExcludeSystemObjects = $true
             }
 
-            $procedures = Get-DbaModule @params
-            $procedures = $procedures | Sort-Object SchemaName, Name
+            [array]$procedures = Get-DbaModule @params
+            [array]$procedures = $procedures | Sort-Object SchemaName, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve stored procedures from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -96,12 +96,12 @@ function Copy-DbrDbStoredProcedure {
 
         # Filter out the stored procedures based on schema
         if ($Schema) {
-            $procedures = $procedures | Where-Object SchemaName -in $Schema
+            [array]$procedures = $procedures | Where-Object SchemaName -in $Schema
         }
 
         # Filter out the stored procedures based on name
         if ($StoredProcedure) {
-            $procedures = $procedures | Where-Object Name -in $StoredProcedure
+            [array]$procedures = $procedures | Where-Object Name -in $StoredProcedure
         }
 
         # Get the database

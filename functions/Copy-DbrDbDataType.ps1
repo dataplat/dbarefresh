@@ -96,18 +96,18 @@ function Copy-DbrDbDataType {
 
         # retrieve the data types
         try {
-            $dataTypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
+            [array]$dataTypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
         if ($Schema) {
-            $dataTypes = $dataTypes | Where-Object Schema -in $Schema
+            [array]$dataTypes = $dataTypes | Where-Object Schema -in $Schema
         }
 
         if ($DataType) {
-            $dataTypes = $dataTypes | Where-Object Name -in $DataType
+            [array]$dataTypes = $dataTypes | Where-Object Name -in $DataType
         }
     }
 
