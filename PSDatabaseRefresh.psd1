@@ -50,7 +50,8 @@
 	'Copy-DbrDbTable',
 	'Copy-DbrDbTableType',
 	'Copy-DbrDbView',
-	'Invoke-DbrDbRefresh'
+	'Invoke-DbrDbRefresh',
+	'Remove-DbrDbView'
 
 	# Cmdlets to export from this module
 	CmdletsToExport   = ''
