@@ -106,7 +106,7 @@ function Copy-DbrDbStoredProcedure {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $Database
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -120,7 +120,7 @@ function Copy-DbrDbStoredProcedure {
         $objectStep = 0
 
         if ($totalObjects -ge 1) {
-            if ($PSCmdlet.ShouldProcess("Copying stored procedures to database $Database")) {
+            if ($PSCmdlet.ShouldProcess("Copying stored procedures to database $SourceDatabase")) {
 
                 foreach ($procedure in $procedures) {
                     $objectStep++
@@ -138,7 +138,7 @@ function Copy-DbrDbStoredProcedure {
 
                     Write-Progress @params
 
-                    Write-PSFMessage -Level Verbose -Message "Creating stored procedure [$($procedure.SchemaName)].[$($procedure.Name)] in $($Database)"
+                    Write-PSFMessage -Level Verbose -Message "Creating stored procedure [$($procedure.SchemaName)].[$($procedure.Name)] in $($SourceDatabase)"
 
                     try {
                         $query = ($db.StoredProcedures | Where-Object { $_.Schema -eq $procedure.SchemaName -and $_.Name -eq $procedure.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
