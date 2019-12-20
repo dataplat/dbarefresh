@@ -1,11 +1,11 @@
-function Remove-DbrDbView {
+function Remove-DbrDbDataType {
 
     <#
     .SYNOPSIS
-        Remove the views
+        Remove the user defined data type
 
     .DESCRIPTION
-        Remove the views in a database
+        Remove the user defined data type in a database
 
     .PARAMETER SqlInstance
         The target SQL Server instance or instances.
@@ -14,13 +14,13 @@ function Remove-DbrDbView {
         Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
     .PARAMETER Database
-        Database to remove the views from
+        Database to remove the user defined data type from
 
     .PARAMETER Schema
         Filter based on schema
 
-    .PARAMETER View
-        View to filter out
+    .PARAMETER DataType
+        user defined data type to filter out
 
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
@@ -34,14 +34,14 @@ function Remove-DbrDbView {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        Remove-DbrDbView -SqlInstance sqldb1 -Database DB1
+        Remove-DbrDbDataType -SqlInstance sqldb1 -Database DB1
 
-        Remove all the views from the database
+        Remove all the user defined data type from the database
 
     .EXAMPLE
-        Remove-DbrDbView -SqlInstance sqldb1 -Database DB1 -View VIEW1, VIEW2
+        Remove-DbrDbDataType -SqlInstance sqldb1 -Database DB1 -DataType Datatype1, Datatype2
 
-        Remove all the views from the database with the name VIEW1 and VIEW2
+        Remove all the user defined data type from the database with the name Datatype1 and Datatype2
 
     #>
 
@@ -54,7 +54,7 @@ function Remove-DbrDbView {
         [parameter(Mandatory)]
         [string]$Database,
         [string[]]$Schema,
-        [string[]]$View,
+        [string[]]$DataType,
         [switch]$EnableException
     )
 
@@ -64,61 +64,62 @@ function Remove-DbrDbView {
         # Connect to the source instance
         $server = Connect-DbaInstance -SqlInstance $SqlInstance -SqlCredential $SqlCredential
 
-        # Get the views
-        $views = @()
-        $views += Get-DbaModule -SqlInstance $server -SqlCredential $SqlCredential -Database $Database -Type View -ExcludeSystemObjects
-        $views = $views | Sort-Object SchemaName, Name
-
-        # Get the database
         $db = $server.Databases[$Database]
 
-        # Filter out the views based on schema
-        if ($Schema) {
-            [array]$views = $views | Where-Object SchemaName -in $Schema
+        $task = "Removing user defined data types"
+
+        # Filter out the user defined data type based on schema
+        Write-Progress -Id ($progressId + 2) -ParentId ($progressId + 1) -Activity $task
+
+        try {
+            [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SqlInstance
         }
 
-        # Filter out the views based on name
-        if ($View) {
-            [array]$views = $views | Where-Object Name -in $View
+        if ($Schema) {
+            [array]$datatypes = $datatypes | Where-Object Schema -in $Schema
+        }
+
+        if ($DataType) {
+            [array]$datatypes = $datatypes | Where-Object Name -in $DataType
         }
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        $totalObjects = $views.Count
+        $totalObjects = $datatypes.Count
         $objectStep = 0
 
-        $progressId = 1
-
         if ($totalObjects -ge 1) {
-            if ($PSCmdlet.ShouldProcess("Removing views from database $Database")) {
+            if ($PSCmdlet.ShouldProcess("Removing user defined data type in database $Database")) {
 
-                $task = "Removing View(s)"
+                $task = "Removing Data Type(s)"
 
-                foreach ($object in $views) {
+                foreach ($object in $datatypes) {
                     $objectStep++
-                    $operation = "View [$($object.SchemaName)].[$($object.Name)]"
+                    $operation = "Data Type [$($object.Schema)].[$($object.Name)]"
 
                     $params = @{
                         Id               = ($progressId + 2)
                         ParentId         = ($progressId + 1)
                         Activity         = $task
-                        Status           = "Progress-> View $objectStep of $totalObjects"
+                        Status           = "Progress-> Data Type $objectStep of $totalObjects"
                         PercentComplete  = $($objectStep / $totalObjects * 100)
                         CurrentOperation = $operation
                     }
 
                     Write-Progress @params
 
-                    Write-PSFMessage -Level Verbose -Message "Dropping view [$($object.SchemaName)].[$($object.Name)] from $Database"
+                    Write-PSFMessage -Level Verbose -Message "Dropping user defined data type [$($object.Schema)].[$($object.Name)] from $Database"
 
                     try {
-                        #$view.Drop()
-                        ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }).Drop()
+                        ($db.UserDefinedDataTypes | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop view from $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop user defined data type from $Database" -Target $object -ErrorRecord $_
                     }
                 }
             }

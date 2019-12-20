@@ -8,7 +8,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
             Get-Command $CommandName | Should -HaveParameter SqlCredential -Type PSCredential
             Get-Command $CommandName | Should -HaveParameter Database -Type string -Mandatory
             Get-Command $CommandName | Should -HaveParameter Schema -Type string[]
-            Get-Command $CommandName | Should -HaveParameter View -Type string[]
+            Get-Command $CommandName | Should -HaveParameter DataType -Type string[]
             Get-Command $CommandName | Should -HaveParameter EnableException -Type switch
         }
     }
@@ -30,20 +30,14 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         $server.Databases.Refresh()
 
+        $db = $server.Databases[$script:destinationdatabase]
+
         Context "Database pre-checks" {
 
-            $params = @{
-                SqlInstance          = $server.DomainInstanceName
-                Database             = $script:destinationdatabase
-                Type                 = "View"
-                ExcludeSystemObjects = $true
-            }
+            [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
 
-            $views = @()
-            $views += Get-DbaModule @params
-
-            It "Database should contain views" {
-                $views.Count | Should -Be 4
+            It "Database should contain data types" {
+                $datatypes.Count | Should -Be 3
             }
         }
     }
@@ -62,19 +56,11 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         $db = $server.Databases[$script:destinationdatabase]
 
-        # Check the view count before
-        $params = @{
-            SqlInstance          = $server.DomainInstanceName
-            Database             = $script:destinationdatabase
-            Type                 = "View"
-            ExcludeSystemObjects = $true
-        }
+        # Check before
+        [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
 
-        $views = @()
-        $views += Get-DbaModule @params
-
-        It "Should have views" {
-            $views.Count | Should -Be 4
+        It "Database should contain data types" {
+            $datatypes.Count | Should -Be 3
         }
 
         # Setup parameters
@@ -85,86 +71,63 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
 
         # Remove the views
-        Remove-DbrDbView @params
+        Remove-DbrDbDataType @params
 
-        $db.Views.Refresh()
+        $db.UserDefinedDataTypes.Refresh()
 
-        $params = @{
-            SqlInstance          = $server.DomainInstanceName
-            Database             = $script:destinationdatabase
-            Type                 = "View"
-            ExcludeSystemObjects = $true
-        }
+        # Check after
+        [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
 
-        # Check the view count after
-        $views = @()
-        $views += Get-DbaModule @params
-
-        It "Should not have any views" {
-            $views.Count | Should -Be 0
+        It "Database should not contain any data types" {
+            $datatypes.Count | Should -Be 0
         }
     }
 
-    Context "Run command with view filter" {
+    Context "Run command with data type filter" {
         # Preperations
         Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
 
         $query = "CREATE DATABASE [$($script:destinationdatabase)]"
         Invoke-DbaQuery -SqlInstance $server -Database 'master' -Query $query
 
+        $server.Databases.Refresh()
+
         $query = Get-Content -Path "$PSScriptRoot\..\..\build\database.sql" -Raw
         Invoke-DbaQuery -SqlInstance $server -Database $script:destinationdatabase -Query $query
 
-        $server.Databases.Refresh()
-
         $db = $server.Databases[$script:destinationdatabase]
 
-        # Check the view count before
-        $params = @{
-            SqlInstance          = $server.DomainInstanceName
-            Database             = $script:destinationdatabase
-            Type                 = "View"
-            ExcludeSystemObjects = $true
-        }
+        # Check before
+        [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
 
-        $views = @()
-        $views += Get-DbaModule @params
-
-        It "Should have views" {
-            $views.Count | Should -Be 4
+        It "Database should contain data types" {
+            $datatypes.Count | Should -Be 3
         }
 
         # Setup parameters
         $params = @{
             SqlInstance     = $server.DomainInstanceName
             Database        = $script:destinationdatabase
-            View            = "View2"
+            DataType        = "Datatype1"
             EnableException = $true
         }
 
         # Remove the views
-        Remove-DbrDbView @params
+        Remove-DbrDbDataType @params
 
-        $db.Views.Refresh()
+        $db.UserDefinedDataTypes.Refresh()
 
-        # Check the view count after
-        $params = @{
-            SqlInstance          = $server.DomainInstanceName
-            Database             = $script:destinationdatabase
-            Type                 = "View"
-            ExcludeSystemObjects = $true
+        # Check after
+        [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
+
+        It "Database should contain correct amount of data types" {
+            $datatypes.Count | Should -Be 2
         }
 
-        $views = @()
-        $views += Get-DbaModule @params
-
-        It "Should not have correct amount of views" {
-            $views.Count | Should -Be 3
+        It "Should have the correct data types" {
+            $datatypes.Name | Should -BeIn @("DataType2", "DataType3")
         }
 
-        It "Should have the correct views" {
-            $views.Name | Should -BeIn @("View1", "View3", "View4")
-        }
     }
 
     AfterAll {
