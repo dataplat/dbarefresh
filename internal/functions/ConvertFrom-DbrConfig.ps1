@@ -39,7 +39,7 @@ function ConvertFrom-DbrConfig {
         $jsonErrors += Test-DbrConfig -FilePath $FilePath
 
         if ($jsonErrors.Count -ge 1) {
-            Stop-PSFFunction -Message "Found $($jsonErrors.Count) error(s) in configuration file"
+            Stop-PSFFunction -Message "Found $($jsonErrors.Count) error(s) in configuration file" -EnableException:$EnableException
             return $jsonErrors
         }
 
