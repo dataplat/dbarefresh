@@ -51,6 +51,8 @@
 	'Copy-DbrDbTableType',
 	'Copy-DbrDbView',
 	'Invoke-DbrDbRefresh',
+	'Remove-DbrDbDataType',
+	'Remove-DbrDbForeignKey',
 	'Remove-DbrDbView'
 
 	# Cmdlets to export from this module
