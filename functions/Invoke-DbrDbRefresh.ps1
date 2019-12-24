@@ -254,7 +254,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipView) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
                             try {
-                                #Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name
+                                Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_
@@ -335,7 +335,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
                             try {
-                                #Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
