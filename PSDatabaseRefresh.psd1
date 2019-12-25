@@ -27,7 +27,6 @@
 	# this module
 	RequiredModules   = @(
 		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.0.35' },
-		@{ ModuleName = 'powershell-yaml'; ModuleVersion = '0.4' }
 		@{ ModuleName = 'dbatools'; ModuleVersion = '1.0' }
 	)
 
