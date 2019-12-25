@@ -50,7 +50,6 @@ catch {
 try {
     Remove-Item -Path "$($publishDir.FullName)\PSDatabaseRefresh\appveyor.yml" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PSDatabaseRefresh\build" -Force -Recurse
-    Remove-Item -Path "$($publishDir.FullName)\PSDatabaseRefresh\resources" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PSDatabaseRefresh\tests" -Force -Recurse
 }
 catch {
