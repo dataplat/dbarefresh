@@ -1,11 +1,11 @@
 # constants
-if (Test-Path C:\temp\constants.ps1) {
+if (Test-Path C:\temp\constants_psdatabaserefresh.ps1) {
     Write-Verbose "C:\temp\constants.ps1 found."
     . C:\temp\constants.ps1
 }
 else {
-    $script:instance1 = "localhost"
-    $script:instance2 = "localhost"
+    $script:instance1 = "localhost\sql2017"
+    $script:instance2 = "localhost\sql2017"
     $script:sourcedatabase = "DB1"
     $script:destinationdatabase = "DB2"
 }

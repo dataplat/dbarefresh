@@ -1,36 +1,31 @@
 Add-AppveyorTest -Name "appveyor.prerequisites" -Framework NUnit -FileName "appveyor-prerequisites.ps1" -Outcome Running
 $sw = [system.diagnostics.stopwatch]::startNew()
 
-choco install Pester, dbatools, psframework, psscriptanalyzer  -y  --no-progress --limit-output
+Write-Host -Object "appveyor.prep: Install Pester" -ForegroundColor DarkGreen
+if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\Pester\4.4.2')) {
+    Install-Module -Name Pester -Force -SkipPublisherCheck -MaximumVersion 4.4.2 | Out-Null
+}
+
+
+Write-Host -Object "appveyor.prep: Install dbatools" -ForegroundColor DarkGreen
+if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\dbatools\1.0')) {
+    Install-Module -Name dbatools -Force -SkipPublisherCheck -MinimumVersion 1.0 | Out-Null
+}
+
+Write-Host -Object "appveyor.prep: Install psframework" -ForegroundColor DarkGreen
+if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\psframework\1.0')) {
+    Install-Module -Name psframework -Force -SkipPublisherCheck -MinimumVersion 1.0 | Out-Null
+}
+
+Write-Host -Object "appveyor.prep: Install psscriptanalyzer" -ForegroundColor DarkGreen
+if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\psscriptanalyzer\1.0')) {
+    Install-Module -Name psscriptanalyzer -Force -SkipPublisherCheck -MinimumVersion 1.0 | Out-Null
+}
+
 
 Write-PSFMessage -Level Important -Message "Pester version: $((Get-Module -Name Pester).Version)"
 
 . "$PSScriptRoot\appveyor-constants.ps1"
-
-<# Write-PSFMessage -Level Host -Message "Setup Database"
-$server = Connect-DbaInstance -SqlInstance $instance
-
-if ($server.Databases.Name -notcontains $database) {
-    # Create the database
-    $query = "CREATE DATABASE $($database)"
-    $server.Query($query)
-
-    # Refresh the server object
-    $server.Refresh()
-
-    Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\..\tests\functions\database.sql"
-
-    $server.Databases.Refresh()
-
-    if ($server.Databases[$database].Tables.Name -notcontains 'Person') {
-        Stop-PSFFunction -Message "Database creation unsuccessful!"
-        return
-    }
-} #>
-
-Write-PSFMessage -Level Important -Message "Disabling UAC"
-Set-ItemProperty -Path REGISTRY::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System -Name ConsentPromptBehaviorAdmin -Value 0
-
 
 $sw.Stop()
 Update-AppveyorTest -Name "appveyor-prerequisites" -Framework NUnit -FileName "appveyor-prerequisites.ps1" -Outcome Passed -Duration $sw.ElapsedMilliseconds
