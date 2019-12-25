@@ -21,9 +21,6 @@ if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\psscriptanalyzer\
     Install-Module -Name psscriptanalyzer -Force -SkipPublisherCheck -MaximumVersion 1.18.3 | Out-Null
 }
 
-$pesterVersion = (Get-Module -Name Pester).Version
-Write-PSFMessage -Level Important -Message "Pester version: $($pesterVersion)"
-
 . "$PSScriptRoot\appveyor-constants.ps1"
 
 $sw.Stop()
