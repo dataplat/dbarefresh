@@ -11,15 +11,9 @@ if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\Pester\4.9')) {
     Install-Module -Name Pester -Force -SkipPublisherCheck -MinimumVersion 4.9 | Out-Null
 }
 
-
 Write-PSFMessage -Message "appveyor.prep: Install dbatools" -Level Important
 if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\dbatools\1.0')) {
     Install-Module -Name dbatools -Force -SkipPublisherCheck -MinimumVersion 1.0 | Out-Null
-}
-
-Write-PSFMessage -Message "appveyor.prep: Install psframework" -Level Important
-if (-not(Test-Path 'C:\Program Files\WindowsPowerShell\Modules\psframework\1.0')) {
-    Install-Module -Name psframework -Force -SkipPublisherCheck -MinimumVersion 1.0 | Out-Null
 }
 
 Write-PSFMessage -Message "appveyor.prep: Install psscriptanalyzer" -Level Important
