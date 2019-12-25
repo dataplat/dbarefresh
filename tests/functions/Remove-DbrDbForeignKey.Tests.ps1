@@ -63,7 +63,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         [array]$tables = $db.Tables
         [array]$foreignKeys = $tables.ForeignKeys | Sort-Object Name
 
-        It "Database should contain foreign keys" {
+        It "Database should have correct amount of foreign keys" {
             $foreignKeys.Count | Should -Be 2
         }
 
@@ -77,14 +77,50 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         # Remove the foreign keys
         Remove-DbrDbForeignKey @params
 
+        $server = Connect-DbaInstance -SqlInstance $script:instance2
         $db = $server.Databases[$script:destinationdatabase]
-        $tables = $db.Tables
+        [array]$tables = $db.Tables
 
         # Check after
-        [array]$foreignKeys = $tables.ForeignKeys | Sort-Object Name
-
         It "Database should not contain any foreign keys" {
-            $foreignKeys.Count | Should -Be 0
+            $tables.ForeignKeys.Count | Should -Be 0
+        }
+    }
+
+    Context "Run command with foreign key filter" {
+        # Preperations
+        Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+
+        $query = "CREATE DATABASE [$($script:destinationdatabase)]"
+        Invoke-DbaQuery -SqlInstance $server -Database 'master' -Query $query
+
+        $server.Databases.Refresh()
+
+        $query = Get-Content -Path "$PSScriptRoot\..\..\build\database.sql" -Raw
+        Invoke-DbaQuery -SqlInstance $server -Database $script:destinationdatabase -Query $query
+
+        # Setup parameters
+        $params = @{
+            SqlInstance     = $server.DomainInstanceName
+            Database        = $script:destinationdatabase
+            ForeignKey      = 'FK__Table3_Table2'
+            EnableException = $true
+        }
+
+        # Remove the foreign keys
+        Remove-DbrDbForeignKey @params
+
+        $server = Connect-DbaInstance -SqlInstance $script:instance2
+        $db = $server.Databases[$script:destinationdatabase]
+        [array]$tables = $db.Tables
+
+        # Check after
+        It "Database should have the correct amount of foreign keys" {
+            $tables.ForeignKeys.Count | Should -Be 1
+        }
+
+        It "Should have the correct foreign key(s)" {
+            $tables.ForeignKeys.Name | Should -BeIn @('FK__Table2_Table1')
         }
     }
 
