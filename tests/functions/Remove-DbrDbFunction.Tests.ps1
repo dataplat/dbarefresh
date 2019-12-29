@@ -158,7 +158,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         $functions = @()
         $functions += Get-DbaModule @params
 
-        It "Should not have correct amount of functions" {
+        It "Should have correct amount of functions" {
             $functions.Count | Should -Be 2
         }
 

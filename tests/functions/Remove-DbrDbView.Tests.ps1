@@ -158,7 +158,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         $views = @()
         $views += Get-DbaModule @params
 
-        It "Should not have correct amount of views" {
+        It "Should have correct amount of views" {
             $views.Count | Should -Be 3
         }
 
