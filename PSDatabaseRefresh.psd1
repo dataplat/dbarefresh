@@ -53,6 +53,7 @@
 	'Remove-DbrDbDataType',
 	'Remove-DbrDbForeignKey',
 	'Remove-DbrDbFunction',
+	'Remove-DbrDbSchema',
 	'Remove-DbrDbView'
 
 	# Cmdlets to export from this module
