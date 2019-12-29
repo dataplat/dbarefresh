@@ -162,7 +162,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $functions.Count | Should -Be 2
         }
 
-        It "Should have the correct views" {
+        It "Should have the correct functions" {
             $functions.Name | Should -BeIn @("Function1", "SayHello")
         }
     }
