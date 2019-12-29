@@ -52,6 +52,7 @@
 	'Invoke-DbrDbRefresh',
 	'Remove-DbrDbDataType',
 	'Remove-DbrDbForeignKey',
+	'Remove-DbrDbFunction',
 	'Remove-DbrDbView'
 
 	# Cmdlets to export from this module
