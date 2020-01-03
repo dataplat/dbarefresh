@@ -281,7 +281,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipProcedure) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
                             try {
-                                #Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_
@@ -308,7 +308,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
                             try {
-                                #Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
@@ -362,7 +362,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
                             try {
-                                #Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
@@ -389,7 +389,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipSchema) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing schema(s)")) {
                             try {
-                                #Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_
@@ -462,7 +462,7 @@ function Invoke-DbrDbRefresh {
                             try {
                                 #Remove-DbrDbForeignKey -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
 
-                                #Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDatabase -ErrorRecord $_
