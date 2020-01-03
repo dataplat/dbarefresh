@@ -90,19 +90,31 @@ function Remove-DbrDbTable {
 
                 $task = "Removing Table(s)"
 
-                if ($tables.ForeignKeys.Count -ge 1) {
+                foreach ($object in $tables) {
+                    Write-PSFMessage -Level Verbose -Message "Retrieving referenced columns for table [$($object.Schema)].[$()] on $SqlInstance"
+
                     $params = @{
                         SqlInstance     = $SqlInstance
                         SqlCredential   = $SqlCredential
                         Database        = $Database
-                        Table           = $tables.Name
+                        Schema          = $object.Schema
+                        Table           = $object.Name
                         EnableException = $true
                     }
 
-                    Remove-DbrDbForeignKey @params
-                }
+                    [array]$foreignKeys = Get-DbrDbForeignKey @params
 
-                foreach ($object in $tables) {
+                    if ($foreignKeys.Count -ge 1) {
+                        $params = @{
+                            SqlInstance     = $SqlInstance
+                            SqlCredential   = $SqlCredential
+                            Database        = $Database
+                            ForeignKey      = $foreignKeys.ConstraintName
+                            EnableException = $true
+                        }
+
+                        Remove-DbrDbForeignKey @params
+                    }
 
                     $objectStep++
                     $operation = "Table [$($object.Schema)].[$($object.Name)]"
