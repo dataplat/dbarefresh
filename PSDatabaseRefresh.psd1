@@ -56,6 +56,7 @@
 	'Remove-DbrDbSchema',
 	'Remove-DbrDbStoredProcedure',
 	'Remove-DbrDbTable',
+	'Remove-DbrDbTableType',
 	'Remove-DbrDbView'
 
 	# Cmdlets to export from this module
