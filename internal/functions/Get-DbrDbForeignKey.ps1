@@ -8,6 +8,15 @@ function Get-DbrDbForeignKey {
         When deleting tables, the foreigns to that table should be removed.
         This command returns all the tables that have references to a particular table
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
+
+    .PARAMETER Database
+        Database to remove the tables from
+
     .PARAMETER Schema
         Schema of the table
 
