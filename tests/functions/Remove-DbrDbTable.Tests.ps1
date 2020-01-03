@@ -85,7 +85,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
     }
 
-    Context "Run command with procedure filter" {
+    Context "Run command with table filter" {
         # Preperations
         Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
 
@@ -103,7 +103,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         $tables = @()
         $tables += $db.Tables | Select-Object Schema, Name, ForeignKeys | Sort-Object Schema, Name
 
-        It "Should have stored procedures" {
+        It "Should have tables" {
             $tables.Count | Should -Be 3
         }
 
@@ -118,6 +118,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         # Remove the views
         Remove-DbrDbTable @params
 
+        $db.Tables.Refresh()
+
         # Check the table count after
         $tables = @()
         $tables += $db.Tables | Select-Object Schema, Name, ForeignKeys | Sort-Object Schema, Name
@@ -129,5 +131,9 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         It "Should have the correct tables" {
             $tables.Name | Should -BeIn @("Table1", "Table3")
         }
+    }
+
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
     }
 }
