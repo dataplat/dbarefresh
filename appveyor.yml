@@ -19,7 +19,6 @@ environment:
   appveyor_rdp_password: P$Psd@tabaserefresh2019
 
 services:
-  - mssql2014
   - mssql2017
 
 matrix:
