@@ -150,7 +150,16 @@ function Copy-DbrDbForeignKey {
 
                     try {
                         $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
+
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute script for foreign key $object" -ErrorRecord $_ -Target $object

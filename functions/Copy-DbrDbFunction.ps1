@@ -134,7 +134,16 @@ function Copy-DbrDbFunction {
 
                     try {
                         $query = ($db.UserDefinedFunctions | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
+
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not create user defined function in $db" -Target $function -ErrorRecord $_

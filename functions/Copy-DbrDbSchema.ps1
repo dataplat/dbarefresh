@@ -120,7 +120,15 @@ function Copy-DbrDbSchema {
                     $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                     try {
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute script for schema $object" -ErrorRecord $_ -Target $object

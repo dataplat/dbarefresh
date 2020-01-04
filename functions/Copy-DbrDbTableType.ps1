@@ -141,7 +141,15 @@ function Copy-DbrDbTableType {
                     $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                     try {
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute script for table type $object" -ErrorRecord $_ -Target $view

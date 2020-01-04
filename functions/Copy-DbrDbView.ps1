@@ -135,7 +135,15 @@ function Copy-DbrDbView {
                     $query = ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                     try {
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query -EnableException
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute script for view $object" -ErrorRecord $_ -Target $view

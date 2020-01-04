@@ -151,7 +151,16 @@ function Copy-DbrDbTable {
                 if ($query.Length -ge 1) {
                     try {
                         Write-PSFMessage -Level Verbose -Message "Executing table script"
-                        Invoke-DbaQuery -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query ($query.ToString()) -EnableException
+
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Query           = $query
+                            EnableException = $true
+                        }
+
+                        Invoke-DbaQuery @params
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not execute table script" -Target $query -ErrorRecord $_
