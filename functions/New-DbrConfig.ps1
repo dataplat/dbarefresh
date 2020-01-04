@@ -98,6 +98,6 @@ function New-DbrConfig {
             }
         }
 
-        $databaseObjectArray | ConvertTo-Json -Depth 5 | Set-Content -Path $OutFilePath
+        $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
     }
 }
