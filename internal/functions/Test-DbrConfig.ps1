@@ -73,7 +73,8 @@ function Test-DbrConfig {
                     [PSCustomObject]@{
                         SourceInstance      = $database.sourceinstance
                         DestinationInstance = $database.destinationinstance
-                        Databas             = $database.destinationdatabase
+                        SourceDatabase      = $database.sourcedatabase
+                        DestinationDatabase = $database.destinationdatabase
                         Table               = $null
                         Column              = $null
                         Value               = ($compareResultDb | Where-Object SideIndicator -eq "<=").InputObject -join ","
@@ -85,7 +86,8 @@ function Test-DbrConfig {
                     [PSCustomObject]@{
                         SourceInstance      = $database.sourceinstance
                         DestinationInstance = $database.destinationinstance
-                        Databas             = $database.destinationdatabase
+                        SourceDatabase      = $database.sourcedatabase
+                        DestinationDatabase = $database.destinationdatabase
                         Table               = $null
                         Column              = $null
                         Value               = ($compareResultDb | Where-Object SideIndicator -eq "=>").InputObject -join ","

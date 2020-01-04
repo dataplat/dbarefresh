@@ -3,7 +3,8 @@
         {
             "sourceinstance": "localhost",
             "destinationinstance": "localhost",
-            "databas": "DB1",
+            "sourcedatabas": "DB1",
+            "destinationdatabase": "DB2",
             "tables": [
                 {
                     "fullnam": "dbo.Table1",
@@ -95,7 +96,8 @@
         {
             "sourceinstance": "localhost",
             "destinationinstance": "localhost",
-            "database": "DB2",
+            "sourcedatabase": "DB1",
+            "destinationdatabase": "DB2",
             "tables": [
                 {
                     "fullname": "dbo.Table1",
