@@ -80,4 +80,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
     }
 
+    AfterAll {
+        $null = Remove-Item -Path $script:defaultexportfile -Force
+    }
+
 }
