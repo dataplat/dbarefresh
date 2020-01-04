@@ -107,7 +107,8 @@ function Invoke-DbrDbRefresh {
         [PSCredential]$SourceSqlCredential,
         [string[]]$DestinationSqlInstance,
         [PSCredential]$DestinationSqlCredential,
-        [string[]]$Database,
+        [string[]]$SourceDatabase,
+        [string[]]$DestinationDatabase,
         [switch]$SkipFunction,
         [switch]$SkipProcedure,
         [switch]$SkipTable,
@@ -158,9 +159,14 @@ function Invoke-DbrDbRefresh {
             $items = $items | Where-Object { $_.destinationinstance -in $DestinationSqlInstance }
         }
 
-        if ($Database) {
-            $items = $items | Where-Object { $_.database -in $Database }
+        if ($SourceDatabase) {
+            $items = $items | Where-Object { $_.sourcedatabase -in $SourceDatabase }
         }
+
+        if ($DestinationDatabase) {
+            $items = $items | Where-Object { $_.destinationdatabase -in $DestinationDatabase }
+        }
+
 
         $stopwatchTotal = New-Object System.Diagnostics.Stopwatch
         $stopwatchObject = New-Object System.Diagnostics.Stopwatch
@@ -177,18 +183,21 @@ function Invoke-DbrDbRefresh {
 
         foreach ($item in $items) {
 
+            # Connect to server
+            try {
+                $sourceServer = Connect-DbaInstance -SqlInstance $item.sourceinstance -SqlCredential $SourceSqlCredential -ClientName $ClientName -MultipleActiveResultSets
+            }
+            catch {
+                Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance )" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError
+                return
+            }
+
+            $sourceDatabase = $sourceServer.Databases | Where-Object Name -eq $item.sourcedatabase
+
             [array]$destinationsInstances = $item.destinationinstance
 
             # Loop through each of the destination instances
             foreach ($destInstance in $destinationsInstances) {
-                # Connect to server
-                try {
-                    $sourceServer = Connect-DbaInstance -SqlInstance $item.sourceinstance -SqlCredential $SourceSqlCredential -ClientName $ClientName -MultipleActiveResultSets
-                }
-                catch {
-                    Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance )" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError
-                    return
-                }
 
                 try {
                     $destServer = Connect-DbaInstance -SqlInstance $destInstance -SqlCredential $DestinationSqlCredential -ClientName $ClientName -MultipleActiveResultSets
@@ -198,14 +207,13 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Retrieve the databases
-                $sourceDatabase = $sourceServer.Databases | Where-Object Name -eq $item.database
                 $destDatabases = $destServer.Databases
 
                 $totalSteps = 15
                 $currentStep = 1
                 $progressId = 1
 
-                $dbCount = $sourceDatabases.Count
+                $dbCount = $destDatabases.Count
                 $dbStep = 0
 
                 # Loop through the source databases
@@ -234,7 +242,7 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Get the destination database
-                $destDatabase = $destServer.Databases[$item.database]
+                $destDatabase = $destServer.Databases[$item.destinationdatabase]
 
                 # Drop all views
                 if (-not $SkipViewDrop) {
@@ -486,7 +494,8 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            Database                 = $destDatabase.Name
+                            SourceDatabase           = $sourceDatabase.Name
+                            DestinationDatabase      = $destDatabase.Name
                             EnableException          = $true
                         }
 
@@ -607,7 +616,8 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            Database                 = $destDatabase.Name
+                            SourceDatabase           = $sourceDatabase.Name
+                            DestinationDatabase      = $destDatabase.Name
                             EnableException          = $true
                         }
 
@@ -633,7 +643,8 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            Database                 = $destDatabase.Name
+                            SourceDatabase           = $sourceDatabase.Name
+                            DestinationDatabase      = $destDatabase.Name
                             EnableException          = $true
                         }
 
