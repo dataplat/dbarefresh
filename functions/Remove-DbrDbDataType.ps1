@@ -20,7 +20,7 @@ function Remove-DbrDbDataType {
         Filter based on schema
 
     .PARAMETER DataType
-        user defined data type to filter out
+        User defined data type to filter out
 
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
