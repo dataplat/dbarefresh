@@ -55,7 +55,7 @@ function Test-DbrConfig {
         $supportedDataTypes = 'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'smalldatetime', 'smallint', 'text', 'time', 'uniqueidentifier', 'userdefineddatatype', 'varchar'
         $supportedOperators = 'eq', '=', 'in', 'le', '<=', 'lt', '<', 'ge', '>=', 'gt', '>', 'like'
 
-        $requiredDatabaseProperties = 'sourceinstance', 'destinationinstance', 'database', 'tables'
+        $requiredDatabaseProperties = 'sourceinstance', 'destinationinstance', 'sourcedatabase', 'destinationdatabase', 'tables'
         $requiredTableProperties = 'fullname', 'schema', 'name', 'columns', 'query'
         $requiredColumnProperties = 'name', 'datatype', 'filter'
     }

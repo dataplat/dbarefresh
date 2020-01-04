@@ -17,19 +17,19 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
     BeforeAll {
         $server = Connect-DbaInstance -SqlInstance $script:instance2
 
-        if ($server.Databases.Name -contains $script:destinationdatabase) {
-            Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+        if ($server.Databases.Name -contains $script:sourcedatabase) {
+            Remove-DbaDatabase -SqlInstance $server -Database $script:sourcedatabase -Confirm:$false
         }
 
-        $query = "CREATE DATABASE [$($script:destinationdatabase)]"
+        $query = "CREATE DATABASE [$($script:sourcedatabase)]"
         Invoke-DbaQuery -SqlInstance $server -Database 'master' -Query $query
 
         $query = Get-Content -Path "$PSScriptRoot\..\..\build\database.sql" -Raw
-        Invoke-DbaQuery -SqlInstance $server -Database $script:destinationdatabase -Query $query
+        Invoke-DbaQuery -SqlInstance $server -Database $script:sourcedatabase -Query $query
 
         $server.Databases.Refresh()
 
-        $db = $server.Databases[$script:destinationdatabase]
+        $db = $server.Databases[$script:sourcedatabase]
 
         Context "Database pre-checks" {
 
@@ -44,7 +44,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         # Setup parameters
         $params = @{
             SqlInstance     = $server.DomainInstanceName
-            Database        = $script:destinationdatabase
+            Database        = $script:sourcedatabase
             OutFilePath     = $script:defaultexportfile
             EnableException = $true
         }
@@ -57,7 +57,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         It "Should contain data" {
             $data = Get-Content -Path $Script:defaultexportfile
-            $data.Length | Should -Be 95
+            $data.Length | Should -Be 96
         }
 
         It "Should contain correct data" {
@@ -66,7 +66,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $json.databases.Count | Should -Be 1
             $json.databases[0].sourceinstance | Should -Be $server.DomainInstanceName
             $json.databases[0].destinationinstance | Should -Be $server.DomainInstanceName
-            $json.databases[0].database | Should -Be $script:destinationdatabase
+            $json.databases[0].sourcedatabase | Should -Be $script:sourcedatabase
+            $json.databases[0].destinationdatabase | Should -Be $script:sourcedatabase
             $json.databases[0].tables.Count | Should -Be 3
 
             $json.databases[0].tables[1].fullname | Should -Be "dbo.Table2"

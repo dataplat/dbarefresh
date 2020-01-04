@@ -139,7 +139,8 @@ function New-DbrConfig {
                 $databaseObjectArray += [PSCustomObject]@{
                     sourceinstance      = $server.DomainInstanceName
                     destinationinstance = $server.DomainInstanceName
-                    database            = $db.Name
+                    sourcedatabase      = $db.Name
+                    destinationdatabase = $db.Name
                     tables              = $tableObjectArray
                 }
             }
