@@ -36,7 +36,7 @@ function New-DbrConfig {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        $result = @()
+        $config = @()
 
         $databaseObjectArray = @()
 
@@ -71,7 +71,7 @@ function New-DbrConfig {
                     foreach ($columnObject in $columns) {
                         $columnObjectArray += [PSCustomObject]@{
                             name     = $columnObject.Name
-                            datatype = $columnObject.datatype
+                            datatype = $columnObject.datatype.name
                             filter   = $($null)
                         }
                     }
@@ -93,11 +93,11 @@ function New-DbrConfig {
                 }
             }
 
-            $result += [PSCustomObject]@{
+            $config += [PSCustomObject]@{
                 databases = $databaseObjectArray
             }
         }
 
-        $databaseObjectArray | ConvertTo-Json | Set-Content -Path $OutFilePath
+        $databaseObjectArray | ConvertTo-Json -Depth 5 | Set-Content -Path $OutFilePath
     }
 }
