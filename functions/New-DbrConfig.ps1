@@ -1,5 +1,7 @@
 function New-DbrConfig {
 
+    [CmdLetBinding(SupportsShouldProcess)]
+
     param(
         [parameter(Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
@@ -98,6 +100,14 @@ function New-DbrConfig {
             }
         }
 
-        $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
+        if ($PSCmdlet.ShouldProcess("Writing JSON data to '$OutFilePath'")) {
+            try {
+                $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
+            }
+            catch {
+                Stop-PSFFunction -Message "Could not write JSON data" -Target $OutFilePath -ErrorRecord $_
+            }
+
+        }
     }
 }
