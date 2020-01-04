@@ -65,7 +65,7 @@ function New-DbrConfig {
         $databases = $server.Databases | Where-Object Name -in $Database
 
         if (-not $OutFilePath) {
-            Write-PSFMessage -Message "Setting output file path"
+            Write-PSFMessage -Message "Setting output file path" -Level Verbose
             $OutFilePath = (Join-Path -Path $env:TEMP -ChildPath "databaserefresh.json")
         }
 
