@@ -1,5 +1,49 @@
 function New-DbrConfig {
 
+    <#
+    .SYNOPSIS
+        Create a new config file from a database
+
+    .DESCRIPTION
+        Create new config based on a database and export it
+
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
+
+    .PARAMETER Database
+        Database to remove the user defined data type from
+
+    .PARAMETER OutFilePath
+        Output file to export the JSON data to.
+        The default location is $env:TEMP with the file name "databaserefresh.json"
+
+    .PARAMETER Schema
+        Filter based on schema
+
+    .PARAMETER Table
+        Table to filter out
+
+    .PARAMETER WhatIf
+        Shows what would happen if the command were to run. No actions are actually performed.
+
+    .PARAMETER Confirm
+        Prompts you for confirmation before executing any changing operations within the command.
+
+    .PARAMETER EnableException
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+
+    .EXAMPLE
+        New-DbrConfig -SqlInstance inst1 -Database DB1 -OutFilePath C:\temp\DB1.json
+
+        Export the data based on the database "DB1"
+
+    #>
+
     [CmdLetBinding(SupportsShouldProcess)]
 
     param(
@@ -19,6 +63,11 @@ function New-DbrConfig {
         $server = Connect-DbaInstance -SqlInstance $SqlInstance -SqlCredential $SqlCredential
 
         $databases = $server.Databases | Where-Object Name -in $Database
+
+        if (-not $OutFilePath) {
+            Write-PSFMessage -Message "Setting output file path"
+            $OutFilePath = (Join-Path -Path $env:TEMP -ChildPath "databaserefresh.json")
+        }
 
         if ((Test-Path -Path $OutFilePath)) {
             if ((Get-Item $OutFilePath) -isnot [System.IO.FileInfo]) {
