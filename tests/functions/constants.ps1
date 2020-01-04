@@ -8,4 +8,6 @@ else {
     $script:instance2 = "localhost\sql2017"
     $script:sourcedatabase = "DB1"
     $script:destinationdatabase = "DB2"
+    $script:defaultexportfilename = "database.json"
+    $script:defaultexportfile = (Join-Path -Path $env:USERPROFILE -ChildPath $script:defaultexportfilename)
 }
