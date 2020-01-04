@@ -22,8 +22,11 @@ function Invoke-DbrDbRefresh {
     .PARAMETER DestinationSqlCredential
         Login to the target destination instance using alternative credentials. Windows and SQL Authentication supported. Accepts credential objects (Get-Credential)
 
-    .PARAMETER Database
-        Database(s) to copy data from
+    .PARAMETER SourceDatabase
+        Filter database(s) to copy data from
+
+    .PARAMETER DestinationDatabase
+        Filter database(s) to copy data to
 
     .PARAMETER SkipFunction
         Skip function objects
