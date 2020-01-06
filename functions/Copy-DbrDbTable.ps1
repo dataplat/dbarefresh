@@ -93,8 +93,25 @@ function Copy-DbrDbTable {
             Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
+        $sourceDb = $sourceServer.Databases | Where-Object Name -eq $SourceDatabase
+
+        try {
+            # Connect to the source instance
+            $destServer = Connect-DbaInstance -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
+
+        if ($destServer.Databases.Name -contains $DestinationDatabase) {
+            $destDb = $destServer.Databases | Where-Object Name -eq $DestinationDatabase
+        }
+        else {
+            Stop-PSFFunction -Message "Could not find database [$DestinationDatabase] on $DestinationSqlInstance" -Continue
+        }
+
         $tables = @()
-        [array]$tables += $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
+        [array]$tables += $sourceDb.Tables | Sort-Object Schema, Name
 
         # Filter out the tables based on schema
         if ($Schema) {
@@ -121,7 +138,7 @@ function Copy-DbrDbTable {
                 foreach ($object in $tables) {
                     $objectStep++
 
-                    if ($destinationDb.Tables.Name -notcontains $object.Name) {
+                    if ($destDb.Tables.Name -notcontains $object.Name) {
                         $operation = "Table [$($object.Schema)].[$($object.Name)]"
 
                         $params = @{
@@ -154,7 +171,7 @@ function Copy-DbrDbTable {
                         DestinationDatabase    = $DestinationDatabase
                         ObjectType             = "Table"
                         Parent                 = $null
-                        Object                 = "$($table.Schema).$($table.Name)"
+                        Object                 = "$($object.Schema).$($object.Name)"
                         Information            = $null
                     }
                 }
