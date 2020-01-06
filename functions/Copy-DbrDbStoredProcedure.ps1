@@ -158,12 +158,14 @@ function Copy-DbrDbStoredProcedure {
                     }
 
                     [PSCustomObject]@{
-                        SqlInstance = $DestinationSqlInstance
-                        Database    = $Database
-                        ObjectType  = "Stored Procedure"
-                        Parent      = $Database
-                        Object      = "$($procedure.SchemaName).$($procedure.Name)"
-                        Information = $null
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "Stored Procedure"
+                        Parent                 = $null
+                        Object                 = "$($procedure.SchemaName).$($procedure.Name)"
+                        Information            = $null
                     }
                 }
             }

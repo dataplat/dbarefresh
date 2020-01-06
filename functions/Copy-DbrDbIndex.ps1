@@ -164,12 +164,14 @@ function Copy-DbrDbIndex {
                     }
 
                     [PSCustomObject]@{
-                        SqlInstance = $DestinationSqlInstance
-                        Database    = $Database
-                        ObjectType  = "Index"
-                        Parent      = $object.Parent
-                        Object      = "$($object.Name)"
-                        Information = $null
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "Index"
+                        Parent                 = $object.Parent
+                        Object                 = "$($object.Name)"
+                        Information            = $null
                     }
                 }
             }

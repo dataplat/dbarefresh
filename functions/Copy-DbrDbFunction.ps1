@@ -150,12 +150,14 @@ function Copy-DbrDbFunction {
                     }
 
                     [PSCustomObject]@{
-                        SqlInstance = $DestinationSqlInstance
-                        Database    = $SourceDatabase
-                        ObjectType  = "Function"
-                        Parent      = $SourceDatabase
-                        Object      = "$($object.SchemaName).$($object.Name)"
-                        Information = $null
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "Function"
+                        Parent                 = $null
+                        Object                 = "$($object.SchemaName).$($object.Name)"
+                        Information            = $null
                     }
                 }
             }

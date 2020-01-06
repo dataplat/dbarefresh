@@ -146,6 +146,17 @@ function Copy-DbrDbTable {
                             }
                         }
                     }
+
+                    [PSCustomObject]@{
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "Table"
+                        Parent                 = $null
+                        Object                 = "$($table.Schema).$($table.Name)"
+                        Information            = $null
+                    }
                 }
 
                 if ($query.Length -ge 1) {

@@ -135,12 +135,14 @@ function Copy-DbrDbSchema {
                     }
 
                     [PSCustomObject]@{
-                        SqlInstance = $DestinationSqlInstance
-                        Database    = $Database
-                        ObjectType  = "Schema"
-                        Parent      = $Database
-                        Object      = "$($object.Name)"
-                        Information = $null
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "Schema"
+                        Parent                 = $null
+                        Object                 = "$($object.Name)"
+                        Information            = $null
                     }
                 }
             }

@@ -150,12 +150,14 @@ function Copy-DbrDbView {
                     }
 
                     [PSCustomObject]@{
-                        SqlInstance = $DestinationSqlInstance
-                        Database    = $Database
-                        ObjectType  = "View"
-                        Parent      = $Database
-                        Object      = "$($object.SchemaName).$($object.Name)"
-                        Information = $null
+                        SourceSqlInstance      = $SourceSqlInstance
+                        DestinationSqlInstance = $DestinationSqlInstance
+                        SourceDatabase         = $SourceDatabase
+                        DestinationDatabase    = $DestinationDatabase
+                        ObjectType             = "View"
+                        Parent                 = $null
+                        Object                 = "$($object.SchemaName).$($object.Name)"
+                        Information            = $null
                     }
                 }
             }
