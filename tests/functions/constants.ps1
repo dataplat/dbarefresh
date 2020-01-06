@@ -4,7 +4,7 @@ if (Test-Path C:\temp\constants_psdatabaserefresh.ps1) {
     . C:\temp\constants_psdatabaserefresh.ps1
 }
 else {
-    $script:instance1 = "localhost\sql2016"
+    $script:instance1 = "localhost\sql2017"
     $script:instance2 = "localhost\sql2017"
     $script:sourcedatabase = "DB1"
     $script:destinationdatabase = "DB2"
