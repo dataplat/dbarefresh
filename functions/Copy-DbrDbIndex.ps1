@@ -89,15 +89,22 @@ function Copy-DbrDbIndex {
             return
         }
 
+        # Get the database
         try {
-            # Connect to the source instance
-            $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        [array]$sourceTables = $sourceServer.Databases[$SourceDatabase].Tables | Sort-Object Schema, Name
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
+
+        [array]$sourceTables = $sdb.Tables | Sort-Object Schema, Name
 
         # Filter out the indexes based on schema
         if ($Schema) {
@@ -130,48 +137,53 @@ function Copy-DbrDbIndex {
                 $task = "Creating Index(es)"
 
                 foreach ($object in $indexes) {
-                    $objectStep++
-                    $operation = "Index [$($object.Name)]"
+                    if ($object.Name -notin $destDb.Tables.Indexes.Name) {
+                        $objectStep++
+                        $operation = "Index [$($object.Name)]"
 
-                    $progressParams = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Index $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @progressParams
-
-                    Write-PSFMessage -Level Verbose -Message "Creating index $object for $($object.Parent)"
-
-                    try {
-                        $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
-
-                        $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                        $progressParams = @{
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Index $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not execute script for index $object" -ErrorRecord $_ -Target $object
-                    }
+                        Write-Progress @progressParams
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Index"
-                        Parent                 = $object.Parent
-                        Object                 = "$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating index $object for $($object.Parent)"
+
+                        try {
+                            $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not execute script for index $object" -ErrorRecord $_ -Target $object
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Index"
+                            Parent                 = $object.Parent
+                            Object                 = "$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "Index [$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

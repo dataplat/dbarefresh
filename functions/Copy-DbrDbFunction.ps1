@@ -85,7 +85,20 @@ function Copy-DbrDbFunction {
             ExcludeSystemObjects = $true
         }
 
-        $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        # Get the database
+        try {
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
+
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
 
         try {
             [array]$functions = Get-DbaModule @params
@@ -115,49 +128,54 @@ function Copy-DbrDbFunction {
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying user defined functions to database $DestinationDatabase")) {
                 foreach ($object in $functions) {
-                    $objectStep++
-                    $task = "Creating Function(s)"
-                    $operation = "Function [$($object.SchemaName)].[$($object.Name)]"
-
-                    $params = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Function $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @params
-
-                    Write-PSFMessage -Level Verbose -Message "Creating user defined function [$($object.SchemaName)].[$($object.Name)] on $destInstance"
-
-                    try {
-                        $query = ($db.UserDefinedFunctions | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                    if ($object.Name -notin $destDb.UserDefinedFunctions.Name) {
+                        $objectStep++
+                        $task = "Creating Function(s)"
+                        $operation = "Function [$($object.SchemaName)].[$($object.Name)]"
 
                         $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Function $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not create user defined function in $db" -Target $function -ErrorRecord $_
-                    }
+                        Write-Progress @params
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Function"
-                        Parent                 = $null
-                        Object                 = "$($object.SchemaName).$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating user defined function [$($object.SchemaName)].[$($object.Name)] on $destInstance"
+
+                        try {
+                            $query = ($db.UserDefinedFunctions | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not create user defined function in $db" -Target $function -ErrorRecord $_
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Function"
+                            Parent                 = $null
+                            Object                 = "$($object.SchemaName).$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "Function [$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

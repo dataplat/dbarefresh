@@ -104,12 +104,19 @@ function Copy-DbrDbStoredProcedure {
             [array]$procedures = $procedures | Where-Object Name -in $StoredProcedure
         }
 
-        # Get the database
+        # Get the databases
         try {
             $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
+
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
         }
     }
 
@@ -122,50 +129,55 @@ function Copy-DbrDbStoredProcedure {
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying stored procedures to database $SourceDatabase")) {
 
-                foreach ($procedure in $procedures) {
-                    $objectStep++
-                    $task = "Creating Stored Procedure(s)"
-                    $operation = "Stored Procedure [$($procedure.SchemaName)].[$($procedure.Name)]"
-
-                    $params = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Procedure $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @params
-
-                    Write-PSFMessage -Level Verbose -Message "Creating stored procedure [$($procedure.SchemaName)].[$($procedure.Name)] in $($SourceDatabase)"
-
-                    try {
-                        $query = ($db.StoredProcedures | Where-Object { $_.Schema -eq $procedure.SchemaName -and $_.Name -eq $procedure.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                foreach ($object in $procedures) {
+                    if ($object.Name -notin $destDb.StoredProcedures.Name) {
+                        $objectStep++
+                        $task = "Creating Stored Procedure(s)"
+                        $operation = "Stored Procedure [$($object.SchemaName)].[$($object.Name)]"
 
                         $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Procedure $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not create procedure [$($procedure.SchemaName)].[$($procedure.Name)] in $($dbName)`n$_" -Target $procedure -ErrorRecord $_
-                    }
+                        Write-Progress @params
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Stored Procedure"
-                        Parent                 = $null
-                        Object                 = "$($procedure.SchemaName).$($procedure.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating stored procedure [$($object.SchemaName)].[$($object.Name)] in $($SourceDatabase)"
+
+                        try {
+                            $query = ($db.StoredProcedures | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not create procedure [$($object.SchemaName)].[$($object.Name)] in $($dbName)`n$_" -Target $procedure -ErrorRecord $_
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Stored Procedure"
+                            Parent                 = $null
+                            Object                 = "$($object.SchemaName).$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "Procedure [$($object.SchemaName)].[$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

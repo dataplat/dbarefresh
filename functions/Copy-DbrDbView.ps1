@@ -93,7 +93,20 @@ function Copy-DbrDbView {
             Stop-PSFFunction -Message "Could not retrieve views from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase -EnableException
+        # Get the database
+        try {
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
+
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
 
         # Filter out the views based on schema
         if ($Schema) {
@@ -115,49 +128,54 @@ function Copy-DbrDbView {
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying views to database $DestinationDatabase")) {
                 foreach ($object in $views) {
-                    $objectStep++
-                    $task = "Creating View(s)"
-                    $operation = "View [$($object.SchemaName)].[$($object.Name)]"
+                    if ($object.Name -notin $destDb.Views.Name) {
+                        $objectStep++
+                        $task = "Creating View(s)"
+                        $operation = "View [$($object.SchemaName)].[$($object.Name)]"
 
-                    $params = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> View $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @params
-
-                    Write-PSFMessage -Level Verbose -Message "Creating view [$($object.SchemaName)].[$($object.Name)] in $($db.Name)"
-
-                    $query = ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
-
-                    try {
                         $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> View $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not execute script for view $object" -ErrorRecord $_ -Target $view
-                    }
+                        Write-Progress @params
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "View"
-                        Parent                 = $null
-                        Object                 = "$($object.SchemaName).$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating view [$($object.SchemaName)].[$($object.Name)] in $($db.Name)"
+
+                        $query = ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                        try {
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not execute script for view $object" -ErrorRecord $_ -Target $view
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "View"
+                            Parent                 = $null
+                            Object                 = "$($object.SchemaName).$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "View [$($object.SchemaName)].[$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

@@ -89,15 +89,22 @@ function Copy-DbrDbForeignKey {
             return
         }
 
+        # Get the database
         try {
-            # Connect to the source instance
-            $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
 
-        [array]$sourceTables = $sourceServer.Databases[$SourceDatabase].Tables
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
+
+        [array]$sourceTables = $db.Tables
 
         # Filter out the foreign keys based on schema
         if ($Schema) {
@@ -132,48 +139,54 @@ function Copy-DbrDbForeignKey {
                 $task = "Creating Foreign Key(s)"
 
                 foreach ($object in $foreignKeys) {
-                    $objectStep++
-                    $operation = "Foreign Key [$($object.Name)]"
+                    if ($object.Name -notin $destDb.Tables.ForeignKeys.Name) {
 
-                    $progressParams = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Foreign Key $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
+                        $objectStep++
+                        $operation = "Foreign Key [$($object.Name)]"
 
-                    Write-Progress @progressParams
-
-                    Write-PSFMessage -Level Verbose -Message "Creating foreign key $object for $($object.Parent)"
-
-                    try {
-                        $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
-
-                        $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                        $progressParams = @{
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Foreign Key $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not execute script for foreign key $object" -ErrorRecord $_ -Target $object
-                    }
+                        Write-Progress @progressParams
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Foreign Key"
-                        Parent                 = $object.Parent
-                        Object                 = "$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating foreign key $object for $($object.Parent)"
+
+                        try {
+                            $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not execute script for foreign key $object" -ErrorRecord $_ -Target $object
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Foreign Key"
+                            Parent                 = $object.Parent
+                            Object                 = "$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "Foreign key [$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

@@ -85,10 +85,20 @@ function Copy-DbrDbTableType {
             return
         }
 
-        # Connect to the source instance
-        $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
+        # Get the database
+        try {
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
 
-        $db = $sourceServer.Databases[$SourceDatabase]
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
 
         $task = "Collecting user defined table types"
 
@@ -121,49 +131,54 @@ function Copy-DbrDbTableType {
 
                 # Create the user defined table types
                 foreach ($object in $tableTypes) {
-                    $objectStep++
-                    $task = "Creating Table Type(s)"
-                    $operation = "Table Type [$($object.Schema)].[$($object.Name)]"
+                    if ($object.Name -notin $destDb.UserDefinedTableTypes.Name) {
+                        $objectStep++
+                        $task = "Creating Table Type(s)"
+                        $operation = "Table Type [$($object.Schema)].[$($object.Name)]"
 
-                    $params = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Table Type $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @params
-
-                    Write-PSFMessage -Level Verbose -Message "Creating table type [$($object.Schema)].[$($object.Name)] in $($Database)"
-
-                    $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
-
-                    try {
                         $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Table Type $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not execute script for table type $object" -ErrorRecord $_ -Target $view
-                    }
+                        Write-Progress @params
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "User Defined Table Type"
-                        Parent                 = $null
-                        Object                 = "$($object.Schema).$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating table type [$($object.Schema)].[$($object.Name)] in $($Database)"
+
+                        $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                        try {
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not execute script for table type $object" -ErrorRecord $_ -Target $view
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "User Defined Table Type"
+                            Parent                 = $null
+                            Object                 = "$($object.Schema).$($object.Name)"
+                            Information            = $null
+                        }
+                    }
+                    else {
+                        Write-PSFMessage -Message "Table type [$($object.Schema)].[$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }

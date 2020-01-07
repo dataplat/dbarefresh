@@ -70,7 +70,21 @@ function Copy-DbrDbSchema {
     begin {
         $progressId = 1
 
-        $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        # Get the database
+        try {
+            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+        }
+
+
+        try {
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+        }
 
         $task = "Collecting schemas"
 
@@ -100,49 +114,55 @@ function Copy-DbrDbSchema {
 
                 # Create the schemas
                 foreach ($object in $schemas) {
-                    $objectStep++
-                    $task = "Creating Schema(s)"
-                    $operation = "Schema [$($object.Name)]"
+                    if ($object.Name -notin $destDb.Schemas.Name) {
+                        $objectStep++
+                        $task = "Creating Schema(s)"
+                        $operation = "Schema [$($object.Name)]"
 
-                    $params = @{
-                        Id               = ($progressId + 2)
-                        ParentId         = ($progressId + 1)
-                        Activity         = $task
-                        Status           = "Progress-> Schema $objectStep of $totalObjects"
-                        PercentComplete  = $($objectStep / $totalObjects * 100)
-                        CurrentOperation = $operation
-                    }
-
-                    Write-Progress @params
-
-                    Write-PSFMessage -Level Verbose -Message "Creating Schema [$($object.Name)] in $($db.Name)"
-
-                    $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
-
-                    try {
                         $params = @{
-                            SqlInstance     = $DestinationSqlInstance
-                            SqlCredential   = $DestinationSqlCredential
-                            Database        = $DestinationDatabase
-                            Query           = $query
-                            EnableException = $true
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = "Progress-> Schema $objectStep of $totalObjects"
+                            PercentComplete  = $($objectStep / $totalObjects * 100)
+                            CurrentOperation = $operation
                         }
 
-                        Invoke-DbaQuery @params
-                    }
-                    catch {
-                        Stop-PSFFunction -Message "Could not execute script for schema $object" -ErrorRecord $_ -Target $object
-                    }
+                        Write-Progress @params
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Schema"
-                        Parent                 = $null
-                        Object                 = "$($object.Name)"
-                        Information            = $null
+                        Write-PSFMessage -Level Verbose -Message "Creating Schema [$($object.Name)] in $($db.Name)"
+
+                        $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
+
+                        try {
+                            $params = @{
+                                SqlInstance     = $DestinationSqlInstance
+                                SqlCredential   = $DestinationSqlCredential
+                                Database        = $DestinationDatabase
+                                Query           = $query
+                                EnableException = $true
+                            }
+
+                            Invoke-DbaQuery @params
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Could not execute script for schema $object" -ErrorRecord $_ -Target $object
+                        }
+
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Schema"
+                            Parent                 = $null
+                            Object                 = "$($object.Name)"
+                            Information            = $null
+                        }
+
+                    }
+                    else {
+                        Write-PSFMessage -Message "Schema [$($object.Name)] already exists. Skipping..." -Level Verbose
                     }
                 }
             }
