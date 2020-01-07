@@ -87,7 +87,7 @@ function Copy-DbrDbTableType {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -105,7 +105,7 @@ function Copy-DbrDbTableType {
         Write-Progress -Id ($progressId + 2) -ParentId ($progressId + 1) -Activity $task
 
         try {
-            [array]$tableTypes = $db.UserDefinedTableTypes | Sort-Object Schema, Name
+            [array]$tableTypes = $sourceDb.UserDefinedTableTypes | Sort-Object Schema, Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve user defined table types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance

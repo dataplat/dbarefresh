@@ -95,7 +95,7 @@ function Copy-DbrDbView {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -144,9 +144,9 @@ function Copy-DbrDbView {
 
                         Write-Progress @params
 
-                        Write-PSFMessage -Level Verbose -Message "Creating view [$($object.SchemaName)].[$($object.Name)] in $($db.Name)"
+                        Write-PSFMessage -Level Verbose -Message "Creating view [$($object.SchemaName)].[$($object.Name)] in $($sourceDb.Name)"
 
-                        $query = ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                        $query = ($sourceDb.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                         try {
                             $params = @{

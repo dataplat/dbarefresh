@@ -106,7 +106,7 @@ function Copy-DbrDbStoredProcedure {
 
         # Get the databases
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -149,7 +149,7 @@ function Copy-DbrDbStoredProcedure {
                         Write-PSFMessage -Level Verbose -Message "Creating stored procedure [$($object.SchemaName)].[$($object.Name)] in $($SourceDatabase)"
 
                         try {
-                            $query = ($db.StoredProcedures | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                            $query = ($sourceDb.StoredProcedures | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                             $params = @{
                                 SqlInstance     = $DestinationSqlInstance
@@ -162,7 +162,7 @@ function Copy-DbrDbStoredProcedure {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create procedure [$($object.SchemaName)].[$($object.Name)] in $($dbName)`n$_" -Target $procedure -ErrorRecord $_
+                            Stop-PSFFunction -Message "Could not create procedure [$($object.SchemaName)].[$($object.Name)] in $($sourceDbName)`n$_" -Target $procedure -ErrorRecord $_
                         }
 
                         [PSCustomObject]@{

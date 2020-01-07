@@ -91,7 +91,7 @@ function Copy-DbrDbIndex {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -104,7 +104,7 @@ function Copy-DbrDbIndex {
             Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
         }
 
-        [array]$sourceTables = $sdb.Tables | Sort-Object Schema, Name
+        [array]$sourceTables = $sourceDb.Tables | Sort-Object Schema, Name
 
         # Filter out the indexes based on schema
         if ($Schema) {

@@ -72,7 +72,7 @@ function Copy-DbrDbSchema {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -92,7 +92,7 @@ function Copy-DbrDbSchema {
 
         try {
             $schemas = @()
-            [array]$schemas += $db.Schemas | Where-Object IsSystemObject -eq $false | Sort-Object Name
+            [array]$schemas += $sourceDb.Schemas | Where-Object IsSystemObject -eq $false | Sort-Object Name
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve schemas from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -130,7 +130,7 @@ function Copy-DbrDbSchema {
 
                         Write-Progress @params
 
-                        Write-PSFMessage -Level Verbose -Message "Creating Schema [$($object.Name)] in $($db.Name)"
+                        Write-PSFMessage -Level Verbose -Message "Creating Schema [$($object.Name)] in $($sourceDb.Name)"
 
                         $query = $object | Export-DbaScript -Passthru -NoPrefix | Out-String
 

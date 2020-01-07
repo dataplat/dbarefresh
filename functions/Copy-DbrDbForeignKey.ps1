@@ -91,7 +91,7 @@ function Copy-DbrDbForeignKey {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -104,7 +104,7 @@ function Copy-DbrDbForeignKey {
             Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
         }
 
-        [array]$sourceTables = $db.Tables
+        [array]$sourceTables = $sourceDb.Tables
 
         # Filter out the foreign keys based on schema
         if ($Schema) {

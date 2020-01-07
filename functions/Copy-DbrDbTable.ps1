@@ -85,29 +85,19 @@ function Copy-DbrDbTable {
             return
         }
 
+        # Get the databases
         try {
-            # Connect to the source instance
-            $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
         }
-
-        $sourceDb = $sourceServer.Databases | Where-Object Name -eq $SourceDatabase
 
         try {
-            # Connect to the source instance
-            $destServer = Connect-DbaInstance -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential
+            $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to instance" -ErrorRecord $_ -Target $SourceSqlInstance
-        }
-
-        if ($destServer.Databases.Name -contains $DestinationDatabase) {
-            $destDb = $destServer.Databases | Where-Object Name -eq $DestinationDatabase
-        }
-        else {
-            Stop-PSFFunction -Message "Could not find database [$DestinationDatabase] on $DestinationSqlInstance" -Continue
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
         }
 
         $tables = @()

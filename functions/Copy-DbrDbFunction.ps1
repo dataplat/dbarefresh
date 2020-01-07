@@ -87,7 +87,7 @@ function Copy-DbrDbFunction {
 
         # Get the database
         try {
-            $db = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -147,7 +147,7 @@ function Copy-DbrDbFunction {
                         Write-PSFMessage -Level Verbose -Message "Creating user defined function [$($object.SchemaName)].[$($object.Name)] on $destInstance"
 
                         try {
-                            $query = ($db.UserDefinedFunctions | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
+                            $query = ($sourceDb.UserDefinedFunctions | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }) | Export-DbaScript -Passthru -NoPrefix | Out-String
 
                             $params = @{
                                 SqlInstance     = $DestinationSqlInstance
@@ -160,7 +160,7 @@ function Copy-DbrDbFunction {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create user defined function in $db" -Target $function -ErrorRecord $_
+                            Stop-PSFFunction -Message "Could not create user defined function in $sourceDb" -Target $function -ErrorRecord $_
                         }
 
                         [PSCustomObject]@{
