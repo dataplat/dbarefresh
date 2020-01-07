@@ -163,7 +163,7 @@ function Get-DbrDbForeignKey {
             }
         }
 
-        $results | Sort-Object ReferencedSchema, ReferencedTable
+        $results | Select-Object ReferencedSchema, ReferencedTable, ReferencedColumnName, ConstraintName, ParentTable, ParentColumnName -Unique | Sort-Object ReferencedSchema, ReferencedTable
     }
 
 
