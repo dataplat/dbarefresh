@@ -91,7 +91,7 @@ function Remove-DbrDbTable {
                 $task = "Removing Table(s)"
 
                 foreach ($object in $tables) {
-                    Write-PSFMessage -Level Verbose -Message "Retrieving referenced columns for table [$($object.Schema)].[$()] on $SqlInstance"
+                    Write-PSFMessage -Level Verbose -Message "Retrieving referenced columns for table [$($object.Schema)].[$($object.Name)] in [$($db.Name)]"
 
                     $params = @{
                         SqlInstance     = $SqlInstance
@@ -105,6 +105,8 @@ function Remove-DbrDbTable {
                     [array]$foreignKeys = Get-DbrDbForeignKey @params
 
                     if ($foreignKeys.Count -ge 1) {
+                        Write-PSFMessage -Message "Dropping referenced foreign keys for table [$($object.Schema)].[$($object.Name)]"
+
                         $params = @{
                             SqlInstance     = $SqlInstance
                             SqlCredential   = $SqlCredential
@@ -114,7 +116,28 @@ function Remove-DbrDbTable {
                         }
 
                         Remove-DbrDbForeignKey @params
+
+                        $db.Tables.Refresh()
                     }
+
+                    if ($object.ForeignKeys.Count -ge 1) {
+                        Write-PSFMessage -Message "Dropping foreign keys for table [$($object.Schema)].[$($object.Name)]"
+
+                        $params = @{
+                            SqlInstance     = $SqlInstance
+                            SqlCredential   = $SqlCredential
+                            Database        = $Database
+                            Schema          = $object.Schema
+                            Table           = $object.Name
+                            EnableException = $true
+                        }
+
+                        Remove-DbrDbForeignKey @params
+
+                        $db.Tables.Refresh()
+                    }
+
+                    $db.Refresh()
 
                     $objectStep++
                     $operation = "Table [$($object.Schema)].[$($object.Name)]"
@@ -130,7 +153,7 @@ function Remove-DbrDbTable {
 
                     Write-Progress @params
 
-                    Write-PSFMessage -Level Verbose -Message "Dropping table [$($object.Schema)].[$($object.Name)] on $SqlInstance"
+                    Write-PSFMessage -Level Verbose -Message "Dropping table [$($object.Schema)].[$($object.Name)] in [$($db.Name)]"
 
                     try {
                         ($db.Tables | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }).Drop()
