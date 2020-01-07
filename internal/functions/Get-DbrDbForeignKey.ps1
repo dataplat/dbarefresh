@@ -134,7 +134,7 @@ function Get-DbrDbForeignKey {
                             ON fc.referenced_column_id = r_ac.column_id
                             AND fc.referenced_object_id = r_ac.object_id)
 
-                SELECT r.referenced_schema_name AS ReferencedSchema,
+                SELECT DISTINCT r.referenced_schema_name AS ReferencedSchema,
                     r.referenced_object_name AS ReferencedTable,
                     r.reference_column_name AS ReferencedColumnName,
                     r.constraint_name AS ConstraintName,
@@ -163,7 +163,7 @@ function Get-DbrDbForeignKey {
             }
         }
 
-        $results | Sort-Object ReferencedSchema, ReferencedTable  -Unique
+        $results | Sort-Object ReferencedSchema, ReferencedTable
     }
 
 
