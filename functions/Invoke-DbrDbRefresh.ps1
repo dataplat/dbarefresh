@@ -184,20 +184,35 @@ function Invoke-DbrDbRefresh {
         # Start the stopwatch
         $stopwatchTotal.Start()
 
+        $dbCount = $items.Count
+        $dbStep = 0
+
         foreach ($item in $items) {
+
+            if (($item.sourceinstance -eq $item.destinationinstance) -and ($item.sourcedatabase -eq $item.destinationdatabase)) {
+                Stop-PSFFunction -Message "Source and destination database cannot be the same when source and destination instance are the same" -Continue
+            }
 
             # Connect to server
             try {
                 $sourceServer = Connect-DbaInstance -SqlInstance $item.sourceinstance -SqlCredential $SourceSqlCredential -ClientName $ClientName -MultipleActiveResultSets
             }
             catch {
-                Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance )" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError
+                Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance)" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError
                 return
             }
 
-            $sourceDatabase = $sourceServer.Databases | Where-Object Name -eq $item.sourcedatabase
+            if ($item.sourcedatabase -notin $sourceServer.Databases.Name) {
+                Stop-PSFFunction -Message "Source database [$($item.sourcedatabase)] could not be found on $sourceServer" -Target $item.sourcedatabase -Continue
+            }
+
+            $sourceDb = $sourceServer.Databases | Where-Object Name -eq $item.sourcedatabase
 
             [array]$destinationsInstances = $item.destinationinstance
+
+            $dbStep++
+            $task = "Refreshing database [$($item.destinationdatabase)]"
+            Write-Progress -Id 1 -Activity $task -Status 'Progress->' -PercentComplete $($dbStep / $dbCount * 100)
 
             # Loop through each of the destination instances
             foreach ($destInstance in $destinationsInstances) {
@@ -209,35 +224,24 @@ function Invoke-DbrDbRefresh {
                     Stop-PSFFunction -Message "Could not connect to $destInstance" -Target $destInstance -ErrorRecord $_ -Category ConnectionError
                 }
 
-                # Retrieve the databases
-                $destDatabases = $destServer.Databases
-
                 $totalSteps = 15
                 $currentStep = 1
                 $progressId = 1
 
-                $dbCount = $destDatabases.Count
-                $dbStep = 0
+                # Loop through the databases
+                Write-PSFMessage -Level Host -Message "Provisioning $($item.destinationdatabase) from $sourceServer to $destServer"
 
-                # Loop through the source databases
-
-                $dbStep++
-                $task = "Refreshing database $($sourceDatabase.Name)"
-                Write-Progress -Id 1 -Activity $task -Status 'Progress->' -PercentComplete $($dbStep / $dbCount * 100)
-
-                Write-PSFMessage -Level Host -Message "Provisioning $($sourceDatabase.Name) from $sourceServer to $destServer"
-
-                if ($sourceDatabase.Name -notin $destDatabases.Name) {
-                    if ($PSCmdlet.ShouldProcess("Creating database [$($sourceDatabase.Name)] on $destServer")) {
+                if ($item.destinationdatabase -notin $destServer.Databases.Name) {
+                    if ($PSCmdlet.ShouldProcess("Creating database [$($item.destinationdatabase)] on $destServer")) {
                         try {
-                            Write-PSFMessage -Level Verbose -Message "Database $($sourceDatabase.Name) doesn't exist. Creating it.."
+                            Write-PSFMessage -Level Verbose -Message "Database $($item.destinationdatabase) doesn't exist. Creating it.."
 
-                            $query = "CREATE DATABASE [$($sourceDatabase.Name)]"
+                            $query = "CREATE DATABASE [$($item.destinationdatabase)]"
 
-                            Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $sourceDatabase.Name -Query $query -EnableException
+                            Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database 'master' -Query $query -EnableException
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create database $($sourceDatabase.name)" -ErrorRecord $_ -Target $destInstance
+                            Stop-PSFFunction -Message "Could not create database $($item.destinationdatabase)" -ErrorRecord $_ -Target $destInstance
                         }
 
                         $destServer.Databases.Refresh()
@@ -245,7 +249,7 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Get the destination database
-                $destDatabase = $destServer.Databases[$item.destinationdatabase]
+                $destDb = $destServer.Databases[$item.destinationdatabase]
 
                 # Drop all views
                 if (-not $SkipViewDrop) {
@@ -265,7 +269,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipView) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
                             try {
-                                Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name
+                                Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_
@@ -292,7 +296,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipProcedure) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
                             try {
-                                Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_
@@ -319,7 +323,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
                             try {
-                                Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
@@ -346,7 +350,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
                             try {
-                                Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
@@ -373,7 +377,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipFunction) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
                             try {
-                                Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
@@ -400,7 +404,7 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipSchema) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing schema(s)")) {
                             try {
-                                Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
                                 Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_
@@ -417,13 +421,14 @@ function Invoke-DbrDbRefresh {
                         SourceSqlCredential      = $SourceSqlCredential
                         DestinationSqlInstance   = $destServer
                         DestinationSqlCredential = $DestinationSqlCredential
-                        Database                 = $db.Name
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
                         EnableException          = $true
                     }
 
                     Copy-DbrDbSchema @params
 
-                    $destServer.Databases[$db.Name].Refresh()
+                    $destDb.Refresh()
                 }
 
                 #endregion schema copy
@@ -445,14 +450,14 @@ function Invoke-DbrDbRefresh {
 
                 if (-not $SkipTable) {
 
-                    $sourceTables = $sourceDatabase.Tables
+                    $sourceTables = $sourceDb.Tables
 
                     $copyParams = @{
                         SqlInstance              = $sourceServer
                         SqlCredential            = $SourceSqlCredential
                         Destination              = $destServer
                         DestinationSqlCredential = $DestinationSqlCredential
-                        Database                 = $sourceDatabase.Name
+                        Database                 = $sourceDb.Name
                         AutoCreateTable          = $false
                         BatchSize                = $BatchSize
                         BulkCopyTimeOut          = $Timeout
@@ -471,14 +476,14 @@ function Invoke-DbrDbRefresh {
                         # Remove the tables
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table(s)")) {
                             try {
-                                #Remove-DbrDbForeignKey -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
-
-                                Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -EnableException
+                                Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDatabase -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDb -ErrorRecord $_
                             }
                         }
+
+                        $destDb.Refresh()
                     }
 
                     $totalObjects = $sourceTables.Count
@@ -497,20 +502,20 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            SourceDatabase           = $sourceDatabase.Name
-                            DestinationDatabase      = $destDatabase.Name
+                            SourceDatabase           = $sourceDb.Name
+                            DestinationDatabase      = $destDb.Name
                             EnableException          = $true
                         }
 
                         Copy-DbrDbTable @params
 
-                        $destServer.Databases[$destDatabase.Name].Tables.Refresh()
+                        $destDb.Refresh()
                     }
 
                     $objectStep = 0
 
                     foreach ($itemTable in $item.tables) {
-                        $table = $sourceDatabase.Tables | Where-Object { $_.Schema -eq $itemTable.schema -and $_.Name -eq $itemTable.Name }
+                        $table = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.schema -and $_.Name -eq $itemTable.Name }
 
                         $objectStep++
                         $operation = "Table [$($table.Schema)].[$($table.Name)]"
@@ -549,13 +554,13 @@ function Invoke-DbrDbRefresh {
                                 }
                             }
 
-                            [int]$rowCountDest = $destDatabases[$destDatabase.Name].Tables[$table.Name].RowCount
+                            [int]$rowCountDest = $destDb.Tables[$table.Name].RowCount
                             Write-PSFMessage -Level Verbose -Message "Row Count Source:         $($rowCountSource)"
                             Write-PSFMessage -Level Verbose -Message "Row Count Destination:    $($rowCountDest)"
 
                             [PSCustomObject]@{
                                 SqlInstance    = $destInstance
-                                Database       = $destDatabase.Name
+                                Database       = $destDb.Name
                                 ObjectType     = "Table"
                                 Parent         = "N/A"
                                 Object         = "$($table.Schema).$($table.Name)"
@@ -565,28 +570,30 @@ function Invoke-DbrDbRefresh {
 
                         }
                         else {
-                            if (-not ($destServer.Databases[$destDatabase.Name].Tables | Where-Object { $_.Schema -eq $table.Schema -and $_.Name -eq $table.Name })) {
-                                $query = Export-DbaScript -InputObject $table -Passthru -NoPrefix
+                            if (-not ($destServer.Databases[$destDb.Name].Tables | Where-Object { $_.Schema -eq $table.Schema -and $_.Name -eq $table.Name })) {
+                                #$query = "$($table | Export-DbaScript -Passthru -NoPrefix | Out-String)`n"
 
-                                if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s)")) {
+                                <# if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s)")) {
                                     try {
                                         Write-PSFMessage -Level Verbose -Message "Creating table [$($table.Schema)].[$($table.Name)]"
 
-                                        Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDatabase.Name -Query $query -EnableException
+                                        Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -Query $query -EnableException
                                     }
                                     catch {
                                         Stop-PSFFunction -Message "Could not create table [$($table.Schema)].[$($table.Name)]" -Target $table -ErrorRecord $_
                                     }
-                                }
+                                } #>
 
                                 [PSCustomObject]@{
-                                    SqlInstance    = $destInstance
-                                    Database       = $destDatabase.Name
-                                    ObjectType     = "Table"
-                                    Parent         = "N/A"
-                                    Object         = "$($table.Schema).$($table.Name)"
-                                    Information    = "No rows to copy"
-                                    ElapsedSeconds = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
+                                    SourceSqlInstance        = $sourceServer
+                                    SourceSqlCredential      = $SourceSqlCredential
+                                    DestinationSqlInstance   = $destServer
+                                    DestinationSqlCredential = $DestinationSqlCredential
+                                    ObjectType               = "Table"
+                                    Parent                   = "N/A"
+                                    Object                   = "$($table.Schema).$($table.Name)"
+                                    Information              = "No rows to copy"
+                                    ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                                 }
                             }
                         }
@@ -594,6 +601,8 @@ function Invoke-DbrDbRefresh {
                         $stopwatchObject.Stop()
 
                         $stopwatchObject.Reset()
+
+                        $destDb.Refresh()
                     } # End for each table
 
                     # Create the indexes
@@ -619,12 +628,14 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            SourceDatabase           = $sourceDatabase.Name
-                            DestinationDatabase      = $destDatabase.Name
+                            SourceDatabase           = $sourceDb.Name
+                            DestinationDatabase      = $destDb.Name
                             EnableException          = $true
                         }
 
                         Copy-DbrDbIndex @params
+
+                        $destDb.Refresh()
                     }
 
                     $currentStep = 10
@@ -646,12 +657,14 @@ function Invoke-DbrDbRefresh {
                             SourceSqlCredential      = $SourceSqlCredential
                             DestinationSqlInstance   = $destServer
                             DestinationSqlCredential = $DestinationSqlCredential
-                            SourceDatabase           = $sourceDatabase.Name
-                            DestinationDatabase      = $destDatabase.Name
+                            SourceDatabase           = $sourceDb.Name
+                            DestinationDatabase      = $destDb.Name
                             EnableException          = $true
                         }
 
                         Copy-DbrDbForeignKey @params
+
+                        $destDb.Refresh()
                     }
                 }
 
@@ -663,17 +676,19 @@ function Invoke-DbrDbRefresh {
 
         $stopwatchTotal.Stop()
 
+
+    }
+
+    end {
         # Output summary
         $totalTime = $stopwatchTotal.Elapsed
 
         $totalTimeMessage = "Total time:   $($totalTime.Hours) hour(s), $($totalTime.Minutes) minute(s), $([Math]::Truncate($totalTime.Seconds)) second(s)"
 
         Write-PSFMessage -Level Output -Message "Total databases refreshed: $($items.databases.Count)"
-        Write-PSFMessage -Level Output -Message "Database(s):  $($items.databases.database -join ",")"
+        Write-PSFMessage -Level Output -Message "Database(s):  $($items.databases.destinationdatabase -join ",")"
         Write-PSFMessage -Level Output -Message $totalTimeMessage
-    }
 
-    end {
         if (Test-PSFFunctionInterrupt) { return }
     }
 
