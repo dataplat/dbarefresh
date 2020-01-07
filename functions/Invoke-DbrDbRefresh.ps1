@@ -206,7 +206,7 @@ function Invoke-DbrDbRefresh {
                 Stop-PSFFunction -Message "Source database [$($item.sourcedatabase)] could not be found on $sourceServer" -Target $item.sourcedatabase -Continue
             }
 
-            $sourceDb = $sourceServer.Databases | Where-Object Name -eq $item.sourcedatabase
+            $sourceDb = $sourceServer.Databases[$item.sourcedatabase]
 
             [array]$destinationsInstances = $item.destinationinstance
 
@@ -496,29 +496,28 @@ function Invoke-DbrDbRefresh {
                         $task = "Creating tables and copying data"
                     }
 
-                    if (-not $SkipTableDrop) {
-                        $params = @{
-                            SourceSqlInstance        = $sourceServer
-                            SourceSqlCredential      = $SourceSqlCredential
-                            DestinationSqlInstance   = $destServer
-                            DestinationSqlCredential = $DestinationSqlCredential
-                            SourceDatabase           = $sourceDb.Name
-                            DestinationDatabase      = $destDb.Name
-                            EnableException          = $true
-                        }
-
-                        Copy-DbrDbTable @params
-
-                        $destDb.Refresh()
+                    $params = @{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
+                        Schema                   = $item.tables.schema
+                        Table                    = $item.tables.Name
+                        EnableException          = $true
                     }
+
+                    Copy-DbrDbTable @params
+
+                    $destDb.Refresh()
 
                     $objectStep = 0
 
                     foreach ($itemTable in $item.tables) {
-                        $table = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.schema -and $_.Name -eq $itemTable.Name }
 
                         $objectStep++
-                        $operation = "Table [$($table.Schema)].[$($table.Name)]"
+                        $operation = "Table [$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
 
                         $progressParams = @{
                             Id               = ($progressId + 2)
@@ -531,11 +530,10 @@ function Invoke-DbrDbRefresh {
 
                         Write-Progress @progressParams
 
-                        $rowCountSource = $table.RowCount
+                        $sourceTableObject = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.schema -and $_.Name -eq $itemTable.Name }
+                        $rowCountSource = $sourceTableObject.RowCount
 
                         $stopwatchObject.Start()
-
-                        $copyParams.Table = "[$($table.Schema)].[$($table.Name)]"
 
                         # Reset the query variable
                         $query = $null
@@ -543,18 +541,27 @@ function Invoke-DbrDbRefresh {
                         # Check if the data needs to be copied or that the only the table needs to be created
                         if (-not $SkipData -and $rowCountSource -ge 1) {
                             if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
+
+                                $copyParams.Table = "[$($itemTable.schema)].[$($itemTable.name)]"
+
                                 try {
-                                    Write-PSFMessage -Level Verbose -Message "Copying data for table [$($table.Schema)].[$($table.Name)]"
+                                    Write-PSFMessage -Level Verbose -Message "Copying data for table [$($itemTable.schema)].[$($itemTable.Name)]"
 
                                     $copyParams.Query = $itemTable.query
+
                                     $results += Copy-DbaDbTableData @copyParams
+
+                                    $destDb.Refresh()
                                 }
                                 catch {
-                                    Stop-PSFFunction -Message "Could not copy data for table [$($table.Schema)].[$($table.Name)]" -Target $table -ErrorRecord $_
+                                    Stop-PSFFunction -Message "Could not copy data for table [$($itemTable.schema)].[$($itemTable.Name)]" -Target $sourceTableObject -ErrorRecord $_
                                 }
                             }
 
-                            [int]$rowCountDest = $destDb.Tables[$table.Name].RowCount
+                            $destTableObject = $null
+                            $destTableObject = $destDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
+                            [int]$rowCountDest = $destTableObject.RowCount
+
                             Write-PSFMessage -Level Verbose -Message "Row Count Source:         $($rowCountSource)"
                             Write-PSFMessage -Level Verbose -Message "Row Count Destination:    $($rowCountDest)"
 
@@ -563,46 +570,29 @@ function Invoke-DbrDbRefresh {
                                 Database       = $destDb.Name
                                 ObjectType     = "Table"
                                 Parent         = "N/A"
-                                Object         = "$($table.Schema).$($table.Name)"
+                                Object         = "$($itemTable.Schema).$($itemTable.Name)"
                                 Information    = "Copied $($rowCountDest) of $($rowCountSource) rows"
                                 ElapsedSeconds = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                             }
 
                         }
                         else {
-                            if (-not ($destServer.Databases[$destDb.Name].Tables | Where-Object { $_.Schema -eq $table.Schema -and $_.Name -eq $table.Name })) {
-                                #$query = "$($table | Export-DbaScript -Passthru -NoPrefix | Out-String)`n"
-
-                                <# if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s)")) {
-                                    try {
-                                        Write-PSFMessage -Level Verbose -Message "Creating table [$($table.Schema)].[$($table.Name)]"
-
-                                        Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -Query $query -EnableException
-                                    }
-                                    catch {
-                                        Stop-PSFFunction -Message "Could not create table [$($table.Schema)].[$($table.Name)]" -Target $table -ErrorRecord $_
-                                    }
-                                } #>
-
-                                [PSCustomObject]@{
-                                    SourceSqlInstance        = $sourceServer
-                                    SourceSqlCredential      = $SourceSqlCredential
-                                    DestinationSqlInstance   = $destServer
-                                    DestinationSqlCredential = $DestinationSqlCredential
-                                    ObjectType               = "Table"
-                                    Parent                   = "N/A"
-                                    Object                   = "$($table.Schema).$($table.Name)"
-                                    Information              = "No rows to copy"
-                                    ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
-                                }
+                            [PSCustomObject]@{
+                                SourceSqlInstance        = $sourceServer
+                                SourceSqlCredential      = $SourceSqlCredential
+                                DestinationSqlInstance   = $destServer
+                                DestinationSqlCredential = $DestinationSqlCredential
+                                ObjectType               = "Table"
+                                Parent                   = "N/A"
+                                Object                   = "$($itemTable.Schema).$($itemTable.Name)"
+                                Information              = "No rows to copy"
+                                ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                             }
                         }
 
                         $stopwatchObject.Stop()
 
                         $stopwatchObject.Reset()
-
-                        $destDb.Refresh()
                     } # End for each table
 
                     # Create the indexes
