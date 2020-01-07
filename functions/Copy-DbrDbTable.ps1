@@ -152,17 +152,17 @@ function Copy-DbrDbTable {
                                 $null = $query.AppendLine("$($column.DefaultConstraint | Export-DbaScript -Passthru -NoPrefix | Out-String)`n")
                             }
                         }
-                    }
 
-                    [PSCustomObject]@{
-                        SourceSqlInstance      = $SourceSqlInstance
-                        DestinationSqlInstance = $DestinationSqlInstance
-                        SourceDatabase         = $SourceDatabase
-                        DestinationDatabase    = $DestinationDatabase
-                        ObjectType             = "Table"
-                        Parent                 = $null
-                        Object                 = "$($object.Schema).$($object.Name)"
-                        Information            = $null
+                        [PSCustomObject]@{
+                            SourceSqlInstance      = $SourceSqlInstance
+                            DestinationSqlInstance = $DestinationSqlInstance
+                            SourceDatabase         = $SourceDatabase
+                            DestinationDatabase    = $DestinationDatabase
+                            ObjectType             = "Table"
+                            Parent                 = $null
+                            Object                 = "$($object.Schema).$($object.Name)"
+                            Information            = $null
+                        }
                     }
                 }
 
