@@ -174,7 +174,7 @@ function Copy-DbrDbTableType {
                             ObjectType             = "User Defined Table Type"
                             Parent                 = $null
                             Object                 = "$($object.Schema).$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {

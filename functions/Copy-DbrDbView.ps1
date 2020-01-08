@@ -171,7 +171,7 @@ function Copy-DbrDbView {
                             ObjectType             = "View"
                             Parent                 = $null
                             Object                 = "$($object.SchemaName).$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {

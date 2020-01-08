@@ -173,7 +173,7 @@ function Copy-DbrDbStoredProcedure {
                             ObjectType             = "Stored Procedure"
                             Parent                 = $null
                             Object                 = "$($object.SchemaName).$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {

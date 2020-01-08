@@ -157,7 +157,7 @@ function Copy-DbrDbSchema {
                             ObjectType             = "Schema"
                             Parent                 = $null
                             Object                 = "$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
 
                     }

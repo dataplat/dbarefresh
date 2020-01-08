@@ -176,7 +176,7 @@ function Copy-DbrDbDataType {
                             ObjectType             = "User Defined Data Type"
                             Parent                 = $null
                             Object                 = "$($object.Schema).$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {

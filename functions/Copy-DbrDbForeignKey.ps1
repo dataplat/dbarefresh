@@ -182,7 +182,7 @@ function Copy-DbrDbForeignKey {
                             ObjectType             = "Foreign Key"
                             Parent                 = $object.Parent
                             Object                 = "$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {

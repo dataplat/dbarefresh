@@ -179,7 +179,7 @@ function Copy-DbrDbIndex {
                             ObjectType             = "Index"
                             Parent                 = $object.Parent
                             Object                 = "$($object.Name)"
-                            Information            = $null
+                            Notes                  = $null
                         }
                     }
                     else {
