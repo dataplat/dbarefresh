@@ -102,6 +102,54 @@ function Remove-DbrDbSchema {
 
                     Write-Progress @params
 
+                    Write-PSFMessage -Level Verbose -Message "Dropping functions with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbFunction -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove functions with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
+                    Write-PSFMessage -Level Verbose -Message "Dropping stored procedures with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbStoredProcedure -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove stored procedures with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
+                    Write-PSFMessage -Level Verbose -Message "Dropping views with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbView -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove views with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
+                    Write-PSFMessage -Level Verbose -Message "Dropping data types with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbDataType -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove data types with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
+                    Write-PSFMessage -Level Verbose -Message "Dropping table types with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbTableType -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove table types with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
+                    Write-PSFMessage -Level Verbose -Message "Dropping tables with schema [$($object.Name)] from $Database"
+                    try {
+                        Remove-DbrDbTable -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Schema
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not remove tables with schema [$($object.Name)]" -ErrorRecord $_ -Target $object.Name
+                    }
+
                     Write-PSFMessage -Level Verbose -Message "Dropping schema [$($object.Name)] from $Database"
 
                     try {
