@@ -166,4 +166,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $functions.Name | Should -BeIn @("Function1", "SayHello")
         }
     }
+
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+    }
 }

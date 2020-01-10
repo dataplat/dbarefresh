@@ -144,4 +144,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $schemas.Name | Should -BeIn @("Schema2", "Schema4")
         }
     }
+
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+    }
 }

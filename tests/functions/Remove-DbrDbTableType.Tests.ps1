@@ -129,4 +129,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
     }
 
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+    }
+
 }

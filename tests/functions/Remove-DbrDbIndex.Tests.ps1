@@ -133,4 +133,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $tables.Indexes.Name | Should -BeIn @('NIX__Table2_column2', 'NIX__Table2_table1id', 'PK_Table1', 'PK_Table2', 'PK_Table3')
         }
     }
+
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+    }
 }

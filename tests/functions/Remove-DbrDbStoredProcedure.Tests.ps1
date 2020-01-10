@@ -160,4 +160,8 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $procedures.Name | Should -BeIn @("Proc1", "Proc3")
         }
     }
+
+    AfterAll {
+        $null = Remove-DbaDatabase -SqlInstance $server -Database $script:destinationdatabase -Confirm:$false
+    }
 }
