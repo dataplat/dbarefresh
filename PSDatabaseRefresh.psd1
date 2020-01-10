@@ -54,6 +54,7 @@
 	'Remove-DbrDbDataType',
 	'Remove-DbrDbForeignKey',
 	'Remove-DbrDbFunction',
+	'Remove-DbrDbIndex',
 	'Remove-DbrDbSchema',
 	'Remove-DbrDbStoredProcedure',
 	'Remove-DbrDbTable',
