@@ -34,6 +34,9 @@ function Copy-DbrDbIndex {
     .PARAMETER Index
         Index to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -138,6 +141,17 @@ function Copy-DbrDbIndex {
                 $task = "Creating Index(es)"
 
                 foreach ($object in $indexes) {
+
+                    if ($Force -and ($object.Name -in $destDb.Indexes.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Index         = $object.Name
+                        }
+
+                        Remove-DbrDbIndex @params
+                    }
 
                     if ($object.Name -notin $destDb.Tables.Indexes.Name) {
                         $objectStep++
