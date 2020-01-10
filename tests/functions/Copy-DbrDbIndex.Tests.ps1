@@ -43,10 +43,10 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
         Context "Database pre-checks" {
 
-            It "Source database should contain data types" {
-                $dataTypes = @()
-                $dataTypes += $sourceDb.UserDefinedDataTypes | Sort-Object Schema, Name
-                $dataTypes.Count | Should -Be 3
+            It "Source database should contain indexes" {
+                $indexes = @()
+                $indexes += $sourceDb.Tables.Indexes | Sort-Object Name
+                $indexes.Count | Should -Be 8
             }
         }
     }
@@ -88,7 +88,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
 
         It "Destination database should have correct amount of indexes" {
-            $indexes.Count | Should -Be 5
+            $indexes.Count | Should -Be 8
         }
     }
 
@@ -135,11 +135,11 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         $indexes += $destDb.Tables.Indexes | Sort-Object Schema, Name
 
         It "Destination database should have correct amount of indexes" {
-            $indexes.Count | Should -Be 2
+            $indexes.Count | Should -Be 3
         }
 
         It "Destination database should have correct indexes" {
-            $indexes.Name | Should -BeIn @("PK_Table2", "NIX__Table2_table1id")
+            $indexes.Name | Should -BeIn @("PK_Table2", "NIX__Table2_table1id", "NIX__Table2_column2")
         }
     }
 
