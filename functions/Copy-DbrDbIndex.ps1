@@ -72,6 +72,7 @@ function Copy-DbrDbIndex {
         [string[]]$Schema,
         [string[]]$Table,
         [string[]]$Index,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -137,6 +138,7 @@ function Copy-DbrDbIndex {
                 $task = "Creating Index(es)"
 
                 foreach ($object in $indexes) {
+
                     if ($object.Name -notin $destDb.Tables.Indexes.Name) {
                         $objectStep++
                         $operation = "Index [$($object.Name)]"

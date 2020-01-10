@@ -31,6 +31,9 @@ function Copy-DbrDbView {
     .PARAMETER View
         View to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbView {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$View,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -128,6 +132,19 @@ function Copy-DbrDbView {
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying views to database $DestinationDatabase")) {
                 foreach ($object in $views) {
+
+                    if ($Force -and ($object.Name -in $destDb.Views.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Schema
+                            View          = $object.Name
+                        }
+
+                        Remove-DbrDbView @params
+                    }
+
                     if ($object.Name -notin $destDb.Views.Name) {
                         $objectStep++
                         $task = "Creating View(s)"

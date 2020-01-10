@@ -31,6 +31,9 @@ function Copy-DbrDbFunction {
     .PARAMETER Function
         User defined functions to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbFunction {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$Function,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -128,6 +132,19 @@ function Copy-DbrDbFunction {
         if ($totalObjects -ge 1) {
             if ($PSCmdlet.ShouldProcess("Copying user defined functions to database $DestinationDatabase")) {
                 foreach ($object in $functions) {
+
+                    if ($Force -and ($object.Name -in $destDb.UserDefinedFunctions.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Schema
+                            Function      = $object.Name
+                        }
+
+                        Remove-DbrDbFunction @params
+                    }
+
                     if ($object.Name -notin $destDb.UserDefinedFunctions.Name) {
                         $objectStep++
                         $task = "Creating Function(s)"

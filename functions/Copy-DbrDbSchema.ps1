@@ -28,6 +28,9 @@ function Copy-DbrDbSchema {
     .PARAMETER Schema
         Filter based on schema
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -64,6 +67,7 @@ function Copy-DbrDbSchema {
         [string]$SourceDatabase,
         [string]$DestinationDatabase,
         [string[]]$Schema,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -114,6 +118,18 @@ function Copy-DbrDbSchema {
 
                 # Create the schemas
                 foreach ($object in $schemas) {
+
+                    if ($Force -and ($object.Name -in $destDb.Schemas.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Name
+                        }
+
+                        Remove-DbrDbSchema @params
+                    }
+
                     if ($object.Name -notin $destDb.Schemas.Name) {
                         $objectStep++
                         $task = "Creating Schema(s)"

@@ -31,6 +31,9 @@ function Copy-DbrDbTableType {
     .PARAMETER TableType
         Table types to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbTableType {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$TableType,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -131,6 +135,19 @@ function Copy-DbrDbTableType {
 
                 # Create the user defined table types
                 foreach ($object in $tableTypes) {
+
+                    if ($Force -and ($object.Name -in $destDb.UserDefinedTableTypes.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Schema
+                            TableType     = $object.Name
+                        }
+
+                        Remove-DbrDbTableType @params
+                    }
+
                     if ($object.Name -notin $destDb.UserDefinedTableTypes.Name) {
                         $objectStep++
                         $task = "Creating Table Type(s)"

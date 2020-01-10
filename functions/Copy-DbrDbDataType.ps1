@@ -31,6 +31,9 @@ function Copy-DbrDbDataType {
     .PARAMETER DataType
         View to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbDataType {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$DataType,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -133,6 +137,19 @@ function Copy-DbrDbDataType {
 
                 # Create the user defined data types
                 foreach ($object in $dataTypes) {
+
+                    if ($Force -and ($object.Name -in $destDb.UserDefinedDataTypes.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Schema
+                            DataType      = $object.Name
+                        }
+
+                        Remove-DbrDbDataType @params
+                    }
+
                     if ($object.Name -notin $destDb.UserDefinedDataTypes.Name) {
                         $objectStep++
                         $task = "Creating Data Type(s)"

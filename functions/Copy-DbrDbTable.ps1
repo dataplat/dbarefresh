@@ -31,6 +31,9 @@ function Copy-DbrDbTable {
     .PARAMETER Table
         Table to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbTable {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$Table,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -126,9 +130,22 @@ function Copy-DbrDbTable {
                 $query = New-Object System.Text.StringBuilder
 
                 foreach ($object in $tables) {
+
+                    if ($Force -and ($object.Name -in $destDb.Tables.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            Schema        = $object.Schema
+                            Table         = $object.Name
+                        }
+
+                        Remove-DbrDbTable @params
+                    }
+
                     $objectStep++
 
-                    if ($destDb.Tables.Name -notcontains $object.Name) {
+                    if ($object.Name -notin $destDb.Tables.Name) {
                         $operation = "Table [$($object.Schema)].[$($object.Name)]"
 
                         $params = @{

@@ -34,6 +34,9 @@ function Copy-DbrDbForeignKey {
     .PARAMETER ForeignKey
         Table to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -72,6 +75,7 @@ function Copy-DbrDbForeignKey {
         [string[]]$Schema,
         [string[]]$Table,
         [string[]]$ForeignKey,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -139,6 +143,18 @@ function Copy-DbrDbForeignKey {
                 $task = "Creating Foreign Key(s)"
 
                 foreach ($object in $foreignKeys) {
+
+                    if ($Force -and ($object.Name -in $destDb.Tables.ForeignKeys.Name)) {
+                        $params = @{
+                            SqlInstance   = $DestinationSqlInstance
+                            SqlCredential = $DestinationSqlCredential
+                            Database      = $DestinationDatabase
+                            ForeignKey    = $object.Name
+                        }
+
+                        Remove-DbrDbForeignKey @params
+                    }
+
                     if ($object.Name -notin $destDb.Tables.ForeignKeys.Name) {
 
                         $objectStep++

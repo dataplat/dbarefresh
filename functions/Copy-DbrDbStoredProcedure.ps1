@@ -31,6 +31,9 @@ function Copy-DbrDbStoredProcedure {
     .PARAMETER StoredProcedure
         Stored procedures to filter out
 
+    .PARAMETER Force
+        If set, the command will remove any objects that are present prior to creating them
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -68,6 +71,7 @@ function Copy-DbrDbStoredProcedure {
         [string]$DestinationDatabase,
         [string[]]$Schema,
         [string[]]$StoredProcedure,
+        [switch]$Force,
         [switch]$EnableException
     )
 
@@ -130,6 +134,19 @@ function Copy-DbrDbStoredProcedure {
             if ($PSCmdlet.ShouldProcess("Copying stored procedures to database $SourceDatabase")) {
 
                 foreach ($object in $procedures) {
+
+                    if ($Force -and ($object.Name -in $destDb.StoredProcedures.Name)) {
+                        $params = @{
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Schema          = $object.Schema
+                            StoredProcedure = $object.Name
+                        }
+
+                        Remove-DbrDbStoredProcedure @params
+                    }
+
                     if ($object.Name -notin $destDb.StoredProcedures.Name) {
                         $objectStep++
                         $task = "Creating Stored Procedure(s)"
