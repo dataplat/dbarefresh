@@ -56,9 +56,9 @@ GO
 
 -- Dropping schemas
 DROP SCHEMA IF EXISTS [Schema1];
-DROP SCHEMA IF EXISTS [Schema1];
-DROP SCHEMA IF EXISTS [Schema1];
-DROP SCHEMA IF EXISTS [Schema1];
+DROP SCHEMA IF EXISTS [Schema2];
+DROP SCHEMA IF EXISTS [Schema3];
+DROP SCHEMA IF EXISTS [Schema4];
 GO
 
 -- Creating schemas
@@ -82,6 +82,10 @@ CREATE TABLE [dbo].[Table1]
         PRIMARY KEY (id)
 );
 
+CREATE NONCLUSTERED INDEX [NIX__Table1_column2]
+ON [dbo].[Table1] (column2);
+GO
+
 CREATE TABLE [dbo].[Table2]
 (
     id INT NOT NULL,
@@ -97,6 +101,10 @@ CREATE TABLE [dbo].[Table2]
 
 CREATE NONCLUSTERED INDEX [NIX__Table2_table1id]
 ON [dbo].[Table2] (table1id);
+GO
+
+CREATE NONCLUSTERED INDEX [NIX__Table2_column2]
+ON [dbo].[Table2] (column2);
 GO
 
 CREATE TABLE [dbo].[Table3]
@@ -115,6 +123,10 @@ GO
 
 CREATE NONCLUSTERED INDEX [NIX__Table3_table2id]
 ON [dbo].[Table3] (table2id);
+GO
+
+CREATE NONCLUSTERED INDEX [NIX__Table3_column2]
+ON [dbo].[Table3] (column2);
 GO
 
 -- Creating data types
