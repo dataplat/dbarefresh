@@ -73,7 +73,7 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
             $json.databases[0].tables[1].fullname | Should -Be "dbo.Table2"
             $json.databases[0].tables[1].schema | Should -Be "dbo"
             $json.databases[0].tables[1].name | Should -Be "Table2"
-            $json.databases[0].tables[1].query | Should -Be "SELECT [id],[column1],[column2],[table1id] FROM [dbo].[Table2] "
+            $json.databases[0].tables[1].query | Should -Be "SELECT [id],[column1],[column2],[table1id] FROM [DB1].[dbo].[Table2] "
             $json.databases[0].tables[1].columns.count | Should -Be 4
             $json.databases[0].tables[1].columns[1].name | Should -Be "column1"
             $json.databases[0].tables[1].columns[1].datatype | Should -Be "varchar"
