@@ -59,7 +59,7 @@ function ConvertFrom-DbrConfig {
                 if ($null -eq $table.query) {
                     $columns = "[$($table.columns.name -join '],[')]"
 
-                    $query = "SELECT $($columns) FROM [$($table.schema)].[$($table.name)] "
+                    $query = "SELECT $($columns) FROM [$($item.sourcedatabase)].[$($table.schema)].[$($table.name)] "
 
                     $filters = @()
 
