@@ -236,9 +236,17 @@ function Invoke-DbrDbRefresh {
                         try {
                             Write-PSFMessage -Level Verbose -Message "Database $($item.destinationdatabase) doesn't exist. Creating it.."
 
-                            $query = "CREATE DATABASE [$($item.destinationdatabase)]"
+                            $dbParams = @{
+                                SourceSqlnstance         = $item.sourceinstance
+                                SourceSqlCredential      = $SourceSqlCredential
+                                SourceDatabase           = $item.sourcedatabase
+                                DestinationSqlnstance    = $item.destinationinstance
+                                DestinationSqlCredential = $DestinationSqlCredential
+                                DestinationDatabase      = $item.destinationdatabase
+                                EnableException          = $true
+                            }
 
-                            Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database 'master' -Query $query -EnableException
+                            New-DbrDatabase @dbParams
                         }
                         catch {
                             Stop-PSFFunction -Message "Could not create database $($item.destinationdatabase)" -ErrorRecord $_ -Target $destInstance
@@ -590,16 +598,16 @@ function Invoke-DbrDbRefresh {
                     } # End for each table
                 }
                 else {
-                        [PSCustomObject]@{
-                            SourceSqlInstance        = $sourceServer
-                            SourceSqlCredential      = $SourceSqlCredential
-                            DestinationSqlInstance   = $destServer
-                            DestinationSqlCredential = $DestinationSqlCredential
-                            ObjectType               = "Table"
-                            Parent                   = "N/A"
-                            Object                   = "$($itemTable.Schema).$($itemTable.Name)"
-                            Notes                    = "No rows to copy"
-                            ElapsedSeconds           = $null
+                    [PSCustomObject]@{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        ObjectType               = "Table"
+                        Parent                   = "N/A"
+                        Object                   = "$($itemTable.Schema).$($itemTable.Name)"
+                        Notes                    = "No rows to copy"
+                        ElapsedSeconds           = $null
                     }
                 }
 
