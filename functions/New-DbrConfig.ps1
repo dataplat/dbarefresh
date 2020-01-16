@@ -82,6 +82,8 @@ function New-DbrConfig {
                 Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath
             }
         }
+
+        $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.General.SupportedDataTypes
     }
 
     process {
@@ -113,7 +115,7 @@ function New-DbrConfig {
                 Write-PSFMessage -Message "Retrieving tables from database $($db.Name)" -Level Verbose
 
                 foreach ($tableObject in $tables) {
-                    $columns = $tableObject.Columns
+                    $columns = $tableObject.Columns | Where-Object { $_.DataType.Name -in $supportedDataTypes }
 
                     $columnObjectArray = @()
 
