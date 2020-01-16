@@ -50,6 +50,7 @@
 	'Copy-DbrDbTableType',
 	'Copy-DbrDbView',
 	'Invoke-DbrDbRefresh',
+	'New-DbrDatabase',
 	'New-DbrConfig',
 	'Remove-DbrDbDataType',
 	'Remove-DbrDbForeignKey',
