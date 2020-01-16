@@ -79,7 +79,7 @@ function Copy-DbrDbSchema {
             $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
 
@@ -87,7 +87,7 @@ function Copy-DbrDbSchema {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
         $task = "Collecting schemas"
@@ -99,7 +99,7 @@ function Copy-DbrDbSchema {
             [array]$schemas += $sourceDb.Schemas | Where-Object IsSystemObject -eq $false | Sort-Object Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve schemas from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve schemas from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         if ($Schema) {
@@ -162,7 +162,7 @@ function Copy-DbrDbSchema {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not execute script for schema $object" -ErrorRecord $_ -Target $object
+                            Stop-PSFFunction -Message "Could not execute script for schema $object" -ErrorRecord $_ -Target $object -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

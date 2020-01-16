@@ -130,7 +130,7 @@ function Remove-DbrDbIndex {
                         Remove-DbrDbForeignKey -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Schema $object.Parent.Schema -Table $object.Parent.Name
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not remove foreign keys with schema [$($object.Parent.Schema)].[$($object.Parent.Name)]" -ErrorRecord $_ -Target $object.Name
+                        Stop-PSFFunction -Message "Could not remove foreign keys with schema [$($object.Parent.Schema)].[$($object.Parent.Name)]" -ErrorRecord $_ -Target $object.Name -EnableException:$EnableException
                     }
 
                     Write-PSFMessage -Level Verbose -Message "Dropping Index [$($object.Name)]"
@@ -138,7 +138,7 @@ function Remove-DbrDbIndex {
                         ($tables.Indexes | Where-Object Name -eq $object.Name).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop index $object" -Target $Database -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop index $object" -Target $Database -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

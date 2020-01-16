@@ -198,12 +198,12 @@ function Invoke-DbrDbRefresh {
                 $sourceServer = Connect-DbaInstance -SqlInstance $item.sourceinstance -SqlCredential $SourceSqlCredential -ClientName $ClientName -MultipleActiveResultSets
             }
             catch {
-                Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance)" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError
+                Stop-PSFFunction -Message "Could not connect to $($item.sourceinstance)" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError -EnableException:$EnableException
                 return
             }
 
             if ($item.sourcedatabase -notin $sourceServer.Databases.Name) {
-                Stop-PSFFunction -Message "Source database [$($item.sourcedatabase)] could not be found on $sourceServer" -Target $item.sourcedatabase -Continue
+                Stop-PSFFunction -Message "Source database [$($item.sourcedatabase)] could not be found on $sourceServer" -Target $item.sourcedatabase -Continue -EnableException:$EnableException
             }
 
             $sourceDb = $sourceServer.Databases[$item.sourcedatabase]
@@ -221,7 +221,7 @@ function Invoke-DbrDbRefresh {
                     $destServer = Connect-DbaInstance -SqlInstance $destInstance -SqlCredential $DestinationSqlCredential -ClientName $ClientName -MultipleActiveResultSets
                 }
                 catch {
-                    Stop-PSFFunction -Message "Could not connect to $destInstance" -Target $destInstance -ErrorRecord $_ -Category ConnectionError
+                    Stop-PSFFunction -Message "Could not connect to $destInstance" -Target $destInstance -ErrorRecord $_ -Category ConnectionError -EnableException:$EnableException
                 }
 
                 $totalSteps = 15
@@ -249,7 +249,7 @@ function Invoke-DbrDbRefresh {
                             New-DbrDatabase @dbParams
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create database $($item.destinationdatabase)" -ErrorRecord $_ -Target $destInstance
+                            Stop-PSFFunction -Message "Could not create database $($item.destinationdatabase)" -ErrorRecord $_ -Target $destInstance -EnableException:$EnableException
                         }
 
                         $destServer.Databases.Refresh()
@@ -282,7 +282,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -309,7 +309,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -336,7 +336,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -363,7 +363,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -390,7 +390,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -417,7 +417,7 @@ function Invoke-DbrDbRefresh {
                                 Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_
+                                Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
                             }
                         }
                     }
@@ -476,7 +476,7 @@ function Invoke-DbrDbRefresh {
                             Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                         }
                         catch {
-                            Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDb -ErrorRecord $_
+                            Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDb -ErrorRecord $_ -EnableException:$EnableException
                         }
                     }
 
@@ -568,7 +568,7 @@ function Invoke-DbrDbRefresh {
                                     $destDb.Refresh()
                                 }
                                 catch {
-                                    Stop-PSFFunction -Message "Could not copy data for table [$($itemTable.schema)].[$($itemTable.Name)]" -Target $sourceTableObject -ErrorRecord $_
+                                    Stop-PSFFunction -Message "Could not copy data for table [$($itemTable.schema)].[$($itemTable.Name)]" -Target $sourceTableObject -ErrorRecord $_ -EnableException:$EnableException
                                 }
                             }
 

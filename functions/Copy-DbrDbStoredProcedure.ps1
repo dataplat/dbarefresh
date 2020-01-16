@@ -95,7 +95,7 @@ function Copy-DbrDbStoredProcedure {
             [array]$procedures = $procedures | Sort-Object SchemaName, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve stored procedures from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve stored procedures from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         # Filter out the stored procedures based on schema
@@ -113,14 +113,14 @@ function Copy-DbrDbStoredProcedure {
             $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         try {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
     }
 
@@ -179,7 +179,7 @@ function Copy-DbrDbStoredProcedure {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create procedure [$($object.SchemaName)].[$($object.Name)] in $($sourceDbName)`n$_" -Target $procedure -ErrorRecord $_
+                            Stop-PSFFunction -Message "Could not create procedure [$($object.SchemaName)].[$($object.Name)] in $($sourceDbName)`n$_" -Target $procedure -ErrorRecord $_ -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

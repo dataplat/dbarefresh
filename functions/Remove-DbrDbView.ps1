@@ -118,7 +118,7 @@ function Remove-DbrDbView {
                         ($db.Views | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop view from $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop view from $Database" -Target $object -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

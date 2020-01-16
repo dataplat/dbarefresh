@@ -79,7 +79,7 @@ function New-DbrConfig {
                 $null = New-Item -Path $OutFilePath -ItemType File
             }
             catch {
-                Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath
+                Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath -EnableException:$EnableException
             }
         }
 
@@ -107,7 +107,7 @@ function New-DbrConfig {
             }
 
             if ($tables.Count -lt 1) {
-                Stop-PSFFunction -Message "No tables to process for database $db"
+                Stop-PSFFunction -Message "No tables to process for database $db" -EnableException:$EnableException
             }
             else {
                 $tableObjectArray = @()
@@ -157,7 +157,7 @@ function New-DbrConfig {
                 $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
             }
             catch {
-                Stop-PSFFunction -Message "Could not write JSON data" -Target $OutFilePath -ErrorRecord $_
+                Stop-PSFFunction -Message "Could not write JSON data" -Target $OutFilePath -ErrorRecord $_ -EnableException:$EnableException
             }
 
         }

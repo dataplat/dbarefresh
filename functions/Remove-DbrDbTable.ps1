@@ -159,7 +159,7 @@ function Remove-DbrDbTable {
                         ($db.Tables | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop table in $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop table in $Database" -Target $object -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

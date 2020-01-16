@@ -89,7 +89,7 @@ function Copy-DbrDbIndex {
         }
 
         if (($DestinationDatabase -eq $SourceDatabase) -and ($SourceSqlInstance -eq $DestinationSqlInstance)) {
-            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase
+            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase -EnableException:$EnableException
             return
         }
 
@@ -105,7 +105,7 @@ function Copy-DbrDbIndex {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
         [array]$sourceTables = $sourceDb.Tables | Sort-Object Schema, Name
@@ -144,10 +144,11 @@ function Copy-DbrDbIndex {
 
                     if ($Force -and ($object.Name -in $destDb.Indexes.Name)) {
                         $params = @{
-                            SqlInstance   = $DestinationSqlInstance
-                            SqlCredential = $DestinationSqlCredential
-                            Database      = $DestinationDatabase
-                            Index         = $object.Name
+                            SqlInstance     = $DestinationSqlInstance
+                            SqlCredential   = $DestinationSqlCredential
+                            Database        = $DestinationDatabase
+                            Index           = $object.Name
+                            EnableException = $EnableException
                         }
 
                         Remove-DbrDbIndex @params
@@ -184,7 +185,7 @@ function Copy-DbrDbIndex {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not execute script for index $object" -ErrorRecord $_ -Target $object
+                            Stop-PSFFunction -Message "Could not execute script for index $object" -ErrorRecord $_ -Target $object -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

@@ -91,7 +91,7 @@ function Copy-DbrDbFunction {
 
         # Get the database
         try {
-            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
+            $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase -EnableException:$EnableException
         }
         catch {
             Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
@@ -101,7 +101,7 @@ function Copy-DbrDbFunction {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
         try {
@@ -109,7 +109,7 @@ function Copy-DbrDbFunction {
             [array]$functions = $functions | Sort-Object SchemaName, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve user defined functions from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve user defined functions from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         # Filter out the functions based on schema
@@ -177,7 +177,7 @@ function Copy-DbrDbFunction {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create user defined function in $sourceDb" -Target $function -ErrorRecord $_
+                            Stop-PSFFunction -Message "Could not create user defined function in $sourceDb" -Target $function -ErrorRecord $_ -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

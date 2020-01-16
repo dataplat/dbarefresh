@@ -85,7 +85,7 @@ function Copy-DbrDbTable {
         }
 
         if (($DestinationDatabase -eq $SourceDatabase) -and ($SourceSqlInstance -eq $DestinationSqlInstance)) {
-            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase
+            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase -EnableException:$EnableException
             return
         }
 
@@ -101,7 +101,7 @@ function Copy-DbrDbTable {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
         $tables = @()
@@ -198,7 +198,7 @@ function Copy-DbrDbTable {
                         Invoke-DbaQuery @params
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not execute table script" -Target $query -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not execute table script" -Target $query -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
                 else {

@@ -85,7 +85,7 @@ function Copy-DbrDbDataType {
         }
 
         if (($DestinationDatabase -eq $SourceDatabase) -and ($SourceSqlInstance -eq $DestinationSqlInstance)) {
-            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase
+            Stop-PSFFunction -Message "Please enter a destination database when copying on the same instance" -Target $DestinationDatabase -EnableException:$EnableException
             return
         }
 
@@ -94,14 +94,14 @@ function Copy-DbrDbDataType {
             $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         try {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
 
@@ -114,7 +114,7 @@ function Copy-DbrDbDataType {
             [array]$dataTypes = $sourceDb.UserDefinedDataTypes | Sort-Object Schema, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         if ($Schema) {
@@ -182,7 +182,7 @@ function Copy-DbrDbDataType {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not execute script for data type $object" -ErrorRecord $_ -Target $view
+                            Stop-PSFFunction -Message "Could not execute script for data type $object" -ErrorRecord $_ -Target $view -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

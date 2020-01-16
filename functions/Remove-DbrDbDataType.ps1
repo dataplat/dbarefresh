@@ -75,7 +75,7 @@ function Remove-DbrDbDataType {
             [array]$datatypes = $db.UserDefinedDataTypes | Sort-Object Schema, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SqlInstance
+            Stop-PSFFunction -Message "Could not retrieve user defined data types from source instance" -ErrorRecord $_ -Target $SqlInstance -EnableException:$EnableException
         }
 
         if ($Schema) {
@@ -119,7 +119,7 @@ function Remove-DbrDbDataType {
                         ($db.UserDefinedDataTypes | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop user defined data type from $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop user defined data type from $Database" -Target $object -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

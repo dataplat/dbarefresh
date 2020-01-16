@@ -74,7 +74,7 @@ function Remove-DbrDbTableType {
             $tableTypes += $db.UserDefinedTableTypes | Select-Object Schema, Name | Sort-Object Schema, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve user defined table types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve user defined table types from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         if ($Schema) {
@@ -116,7 +116,7 @@ function Remove-DbrDbTableType {
                         ($db.UserDefinedTableTypes | Where-Object { $_.Schema -eq $object.Schema -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop user defined table type from $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop user defined table type from $Database" -Target $object -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

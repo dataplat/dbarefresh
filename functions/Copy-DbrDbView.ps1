@@ -94,7 +94,7 @@ function Copy-DbrDbView {
             [array]$views = $views | Sort-Object SchemaName, Name
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve views from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve views from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         # Get the database
@@ -102,14 +102,14 @@ function Copy-DbrDbView {
             $sourceDb = Get-DbaDatabase -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential -Database $SourceDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from source instance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
         }
 
         try {
             $destDb = Get-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase
         }
         catch {
-            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance
+            Stop-PSFFunction -Message "Could not retrieve database from destination instance" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
         }
 
         # Filter out the views based on schema
@@ -177,7 +177,7 @@ function Copy-DbrDbView {
                             Invoke-DbaQuery @params
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not execute script for view $object" -ErrorRecord $_ -Target $view
+                            Stop-PSFFunction -Message "Could not execute script for view $object" -ErrorRecord $_ -Target $view -EnableException:$EnableException
                         }
 
                         [PSCustomObject]@{

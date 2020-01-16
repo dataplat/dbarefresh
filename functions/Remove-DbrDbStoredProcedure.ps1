@@ -118,7 +118,7 @@ function Remove-DbrDbStoredProcedure {
                         ($db.StoredProcedures | Where-Object { $_.Schema -eq $object.SchemaName -and $_.Name -eq $object.Name }).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop stored procedure from $Database" -Target $object -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop stored procedure from $Database" -Target $object -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }

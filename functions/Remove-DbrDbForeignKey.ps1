@@ -130,7 +130,7 @@ function Remove-DbrDbForeignKey {
                         ($tables.ForeignKeys | Where-Object Name -eq $object.Name).Drop()
                     }
                     catch {
-                        Stop-PSFFunction -Message "Could not drop foreign key $object" -Target $Database -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not drop foreign key $object" -Target $Database -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
             }
