@@ -552,9 +552,6 @@ function Invoke-DbrDbRefresh {
 
                         $stopwatchObject.Start()
 
-                        # Reset the query variable
-                        $query = $null
-
                         # Check if the data needs to be copied or that the only the table needs to be created
                         if ($rowCountSource -ge 1) {
                             if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
