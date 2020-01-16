@@ -83,7 +83,7 @@ function New-DbrConfig {
             }
         }
 
-        $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.General.SupportedDataTypes
+        $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedDataTypes
     }
 
     process {
