@@ -77,10 +77,13 @@ function New-DbrDatabase {
     [CmdLetBinding(SupportsShouldProcess)]
 
     param(
-        [DbaInstanceParameter]$SourceSqlnstance,
+        [parameter(Mandatory)]
+        [DbaInstanceParameter]$SourceSqlInstance,
         [pscredential]$SourceSqlCredential,
+        [parameter(Mandatory)]
         [string]$SourceDatabase,
-        [DbaInstanceParameter]$DestinationSqlnstance,
+        [parameter(Mandatory)]
+        [DbaInstanceParameter]$DestinationSqlInstance,
         [pscredential]$DestinationSqlCredential,
         [string]$DestinationDatabase,
         [int]$DataFileSizeMB = 512,
@@ -97,23 +100,23 @@ function New-DbrDatabase {
 
     begin {
         try {
-            $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlnstance -SqlCredential $SourceSqlCredential
+            $sourceServer = Connect-DbaInstance -SqlInstance $SourceSqlInstance -SqlCredential $SourceSqlCredential
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to source instance $SourceSqlInstance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not connect to source instance $SourceSqlInstance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
             return
         }
 
         try {
-            $destServer = Connect-DbaInstance -SqlInstance $DestinationSqlnstance -SqlCredential $DestinationSqlCredential
+            $destServer = Connect-DbaInstance -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential
         }
         catch {
-            Stop-PSFFunction -Message "Could not connect to source instance $SourceSqlInstance" -ErrorRecord $_ -Target $SourceSqlInstance
+            Stop-PSFFunction -Message "Could not connect to source instance $SourceSqlInstance" -ErrorRecord $_ -Target $SourceSqlInstance -EnableException:$EnableException
             return
         }
 
         if ($sourceServer.Databases.Name -notcontains $SourceDatabase ) {
-            Stop-PSFFunction -Message "Source database $SourceDatabase is not present on $SourceSqlInstance"
+            Stop-PSFFunction -Message "Source database $SourceDatabase is not present on $SourceSqlInstance" -EnableException:$EnableException
         }
         else {
             $sourceDb = $sourceServer.Databases[$SourceDatabase]
@@ -122,19 +125,23 @@ function New-DbrDatabase {
         if ($destServer.Databases.Name -contains $DestinationDatabase) {
             if ($Force) {
 
-                if ($PSCmdlet.ShouldProcess("Removing database on $($DestinationSqlnstance)")) {
+                if ($PSCmdlet.ShouldProcess("Removing database on $($DestinationSqlInstance)")) {
                     Write-PSFMessage -Message "Removing database $DestinationDatabase" -Level Verbose
                     try {
-                        $null = Remove-DbaDatabase -SqlInstance $DestinationSqlnstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Confirm:$false
+                        $null = Remove-DbaDatabase -SqlInstance $DestinationSqlInstance -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Confirm:$false
                     }
                     catch {
-                        Stop-PSFFunction -Message "Something went wrong removing database $DestinationDatabase" -ErrorRecord $_ -Target $DestinationDatabase
+                        Stop-PSFFunction -Message "Something went wrong removing database $DestinationDatabase" -ErrorRecord $_ -Target $DestinationDatabase -EnableException:$EnableException
                     }
                 }
             }
             else {
-                Stop-PSFFunction -Message "Database $DestinationDatabase already exists on $DestinationSqlnstance" -Target $DestinationDatabase
+                Stop-PSFFunction -Message "Database $DestinationDatabase already exists on $DestinationSqlInstance" -Target $DestinationDatabase -EnableException:$EnableException
             }
+        }
+
+        if (($SourceSqlInstance -eq $DestinationSqlInstance) -and ($SourceDatabase -eq $DestinationDatabase)) {
+            Stop-PSFFunction -Message "Destination database cannot be the same as the source database on the same SQL Server instance" -Target $DestinationDatabase -EnableException:$EnableException
         }
 
         if (-not $DataPath) {
@@ -143,6 +150,10 @@ function New-DbrDatabase {
 
         if (-not $LogPath) {
             $LogPath = $destServer.DefaultLog
+        }
+
+        if (-not $DestinationDatabase) {
+            $DestinationDatabase = $SourceDatabase
         }
     }
 
@@ -197,14 +208,14 @@ function New-DbrDatabase {
 
         $null = $query.AppendLine($logFileGroup)
 
-        if ($PSCmdlet.ShouldProcess("Creating database on $($DestinationSqlnstance)")) {
+        if ($PSCmdlet.ShouldProcess("Creating database on $($DestinationSqlInstance)")) {
             try {
                 Write-PSFMessage -Message "Creating database $DestinationDatabase" -Level Verbose
                 # Create the database
                 Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database 'master' -Query $query.ToString()
             }
             catch {
-                Stop-PSFFunction -Message "Something went wrong creating the database" -ErrorRecord $_ -Target $DestinationSqlnstance
+                Stop-PSFFunction -Message "Something went wrong creating the database" -ErrorRecord $_ -Target $DestinationSqlInstance -EnableException:$EnableException
                 return
             }
 
@@ -215,7 +226,7 @@ function New-DbrDatabase {
                 Invoke-DbaQuery -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $DestinationDatabase -Query $query
             }
             catch {
-                Stop-PSFFunction -Message "Something went wrong setting the recovery model" -ErrorRecord $_ -Target $DestinationDatabase
+                Stop-PSFFunction -Message "Something went wrong setting the recovery model" -ErrorRecord $_ -Target $DestinationDatabase -EnableException:$EnableException
                 return
             }
         }
