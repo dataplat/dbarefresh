@@ -90,7 +90,7 @@ function New-DbrDatabase {
         [int]$DataFileGrowthMB = 256,
         [string]$DataPath,
         [int]$LogFileSizeMB = 256,
-        [int]$LogFileGrowth = 128,
+        [int]$LogFileGrowthMB = 128,
         [string]$LogPath,
         [ValidateSet('BulkLogged', 'Full', 'Simple')]
         [string]$RecoveryModel = 'Simple',

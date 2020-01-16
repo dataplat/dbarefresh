@@ -14,7 +14,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
             Get-Command $CommandName | Should -HaveParameter DataFileGrowthMB -Type int
             Get-Command $CommandName | Should -HaveParameter DataPath -Type string
             Get-Command $CommandName | Should -HaveParameter LogFileSizeMB -Type int
-            Get-Command $CommandName | Should -HaveParameter LogFileGrowth -Type int
+            Get-Command $CommandName | Should -HaveParameter LogFileGrowthMB -Type int
             Get-Command $CommandName | Should -HaveParameter LogPath -Type string
             Get-Command $CommandName | Should -HaveParameter RecoveryModel -Type string
             Get-Command $CommandName | Should -HaveParameter Force -Type switch
