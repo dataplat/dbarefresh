@@ -203,7 +203,7 @@ function New-DbrDatabase {
     FILENAME = N'$($logFilePath)',
     SIZE = $($LogFileSizeMB)MB,
     MAXSIZE = 2048GB,
-    FILEGROWTH = $($LogFileGrowth)MB
+    FILEGROWTH = $($LogFileGrowthMB)MB
 );"
 
         $null = $query.AppendLine($logFileGroup)
