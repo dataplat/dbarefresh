@@ -16,9 +16,9 @@ function New-DbrConfig {
     .PARAMETER Database
         Database to remove the user defined data type from
 
-    .PARAMETER OutFilePath
-        Output file to export the JSON data to.
-        The default location is $env:TEMP with the file name "databaserefresh.json"
+    .PARAMETER OutPath
+        Output path to export the JSON data to.
+        The default location is $env:TEMP
 
     .PARAMETER Schema
         Filter based on schema
@@ -52,31 +52,33 @@ function New-DbrConfig {
         [PSCredential]$SqlCredential,
         [parameter(Mandatory)]
         [string[]]$Database,
-        [string]$OutFilePath,
+        [string]$OutPath,
         [string[]]$Schema,
         [string[]]$Table,
         [switch]$EnableException
     )
 
     begin {
+        $progressId = 1
+
         # Connect to the source instance
         $server = Connect-DbaInstance -SqlInstance $SqlInstance -SqlCredential $SqlCredential
 
-        $databases = $server.Databases | Where-Object Name -in $Database
+        [array]$databases = $server.Databases | Where-Object Name -in $Database
 
-        if (-not $OutFilePath) {
+        if (-not $OutPath) {
             Write-PSFMessage -Message "Setting output file path" -Level Verbose
-            $OutFilePath = (Join-Path -Path $env:TEMP -ChildPath "databaserefresh.json")
+            $OutPath = $env:TEMP
         }
 
-        if ((Test-Path -Path $OutFilePath)) {
-            if ((Get-Item $OutFilePath) -isnot [System.IO.FileInfo]) {
-                Stop-PSFFunction -Message "OutFilePath is a directory. Please enter a path for a file"
+        if ((Test-Path -Path $OutPath)) {
+            if ((Get-Item $OutPath) -is [System.IO.FileInfo]) {
+                Stop-PSFFunction -Message "OutFilePath is not a directory. Please enter a directory"
             }
         }
         else {
             try {
-                $null = New-Item -Path $OutFilePath -ItemType File
+                $null = New-Item -Path $OutPath -ItemType File
             }
             catch {
                 Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath -EnableException:$EnableException
@@ -89,14 +91,23 @@ function New-DbrConfig {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
+        $dbCount = $databases.Count
+        $dbStep = 0
+
         $config = @()
 
         $databaseObjectArray = @()
 
         foreach ($db in $databases) {
+            $dbStep++
+            $task = "Processing database [$($db.Name)]"
+            Write-Progress -Id 1 -Activity $task -Status 'Progress->' -PercentComplete $($dbStep / $dbCount * 100)
+
             Write-PSFMessage -Message "Retrieving objects from database $($db.Name)" -Level Verbose
 
             $tables = $db.Tables
+
+            $task = "Processing Table(s)"
 
             if ($Schema) {
                 [array]$tables = $tables | Where-Object Schema -in $Schema
@@ -110,11 +121,29 @@ function New-DbrConfig {
                 Stop-PSFFunction -Message "No tables to process for database $db" -EnableException:$EnableException
             }
             else {
+                $totalObjects = $tables.Count
+                $objectStep = 0
+
                 $tableObjectArray = @()
 
                 Write-PSFMessage -Message "Retrieving tables from database $($db.Name)" -Level Verbose
 
                 foreach ($tableObject in $tables) {
+                    $objectStep++
+
+                    $operation = "Table [$($tableObject.Schema)].[$($tableObject.Name)]"
+
+                    $params = @{
+                        Id               = ($progressId + 2)
+                        ParentId         = ($progressId + 1)
+                        Activity         = $task
+                        Status           = "Progress-> Table $objectStep of $totalObjects"
+                        PercentComplete  = $($objectStep / $totalObjects * 100)
+                        CurrentOperation = $operation
+                    }
+
+                    Write-Progress @params
+
                     $columns = $tableObject.Columns | Where-Object { $_.DataType.Name -in $supportedDataTypes }
 
                     $columnObjectArray = @()
@@ -152,12 +181,13 @@ function New-DbrConfig {
             }
         }
 
-        if ($PSCmdlet.ShouldProcess("Writing JSON data to '$OutFilePath'")) {
+        if ($PSCmdlet.ShouldProcess("Writing JSON data to '$($OutPath)'")) {
             try {
-                $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
+                $filePath = Join-Path -Path $OutPath -ChildPath "$($server.DomainInstanceName)_DBRefresh.json"
+                $config | ConvertTo-Json -Depth 7 | Set-Content -Path $filePath
             }
             catch {
-                Stop-PSFFunction -Message "Could not write JSON data" -Target $OutFilePath -ErrorRecord $_ -EnableException:$EnableException
+                Stop-PSFFunction -Message "Could not write JSON data" -Target $filePath -ErrorRecord $_ -EnableException:$EnableException
             }
 
         }
