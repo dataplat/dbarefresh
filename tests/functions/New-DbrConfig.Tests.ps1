@@ -57,12 +57,12 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         }
 
         It "Should contain data" {
-            $data = Get-Content -Path $Script:defaultexportfile
+            $data = Get-Content -Path $file.FullName
             $data.Length | Should -Be 96
         }
 
         It "Should contain correct data" {
-            $json = ConvertFrom-DbrConfig -FilePath $Script:defaultexportfile
+            $json = ConvertFrom-DbrConfig -FilePath $file.FullName
 
             $json.databases.Count | Should -Be 1
             $json.databases[0].sourceinstance | Should -Be $server.DomainInstanceName
