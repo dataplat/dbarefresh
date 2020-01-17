@@ -152,9 +152,11 @@ function New-DbrConfig {
 
                     foreach ($columnObject in $columns) {
                         $columnObjectArray += [PSCustomObject]@{
-                            name     = $columnObject.Name
-                            datatype = $columnObject.datatype.name
-                            filter   = $($null)
+                            name        = $columnObject.Name
+                            datatype    = $columnObject.datatype.name
+                            filter      = $null
+                            iscomputed  = $columnObject.Computed
+                            isgenerated = $(if ($columnObject.GeneratedAlwaysType -eq 'None') { $false } else { $true } )
                         }
                     }
 

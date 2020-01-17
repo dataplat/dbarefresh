@@ -57,7 +57,7 @@ function Test-DbrConfig {
 
         $requiredDatabaseProperties = 'sourceinstance', 'destinationinstance', 'sourcedatabase', 'destinationdatabase', 'tables'
         $requiredTableProperties = 'fullname', 'schema', 'name', 'columns', 'query'
-        $requiredColumnProperties = 'name', 'datatype', 'filter'
+        $requiredColumnProperties = 'name', 'datatype', 'filter', 'iscomputed', 'isgenerated'
     }
 
     process {
