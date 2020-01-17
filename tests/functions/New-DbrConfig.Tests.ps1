@@ -7,6 +7,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
             Get-Command $CommandName | Should -HaveParameter SqlInstance -Type DbaInstanceParameter -Mandatory
             Get-Command $CommandName | Should -HaveParameter SqlCredential -Type PSCredential
             Get-Command $CommandName | Should -HaveParameter Database -Type string[] -Mandatory
+            Get-Command $CommandName | Should -HaveParameter OutPath -Type string
             Get-Command $CommandName | Should -HaveParameter Schema -Type string[]
             Get-Command $CommandName | Should -HaveParameter Table -Type string[]
         }
