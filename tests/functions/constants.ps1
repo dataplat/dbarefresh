@@ -9,5 +9,5 @@ else {
     $script:sourcedatabase = "DB1"
     $script:destinationdatabase = "DB2"
     $script:defaultexportfilename = "database.json"
-    $script:defaultexportfile = $env:USERPROFILE
+    $script:defaultexportfile = $env:temp
 }
