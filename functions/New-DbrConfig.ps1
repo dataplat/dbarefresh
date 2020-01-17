@@ -187,6 +187,8 @@ function New-DbrConfig {
             try {
                 $filePath = Join-Path -Path $OutPath -ChildPath "$($server.DomainInstanceName)_DBRefresh.json"
                 $config | ConvertTo-Json -Depth 7 | Set-Content -Path $filePath
+
+                Get-ItemProperty $filePath
             }
             catch {
                 Stop-PSFFunction -Message "Could not write JSON data" -Target $filePath -ErrorRecord $_ -EnableException:$EnableException

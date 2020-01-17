@@ -46,14 +46,14 @@ Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
         $params = @{
             SqlInstance     = $server.DomainInstanceName
             Database        = $script:sourcedatabase
-            OutFilePath     = $script:defaultexportfile
+            OutPath         = $script:defaultexportfile
             EnableException = $true
         }
 
-        New-DbrConfig @params
+        $file = New-DbrConfig @params
 
         It "Should have created file" {
-            Test-Path -Path $script:defaultexportfile | Should -Be $true
+            Test-Path -Path $file.FullName | Should -Be $true
         }
 
         It "Should contain data" {

@@ -9,5 +9,5 @@ else {
     $script:sourcedatabase = "DB1"
     $script:destinationdatabase = "DB2"
     $script:defaultexportfilename = "database.json"
-    $script:defaultexportfile = (Join-Path -Path $env:USERPROFILE -ChildPath $script:defaultexportfilename)
+    $script:defaultexportfile = $env:USERPROFILE
 }
