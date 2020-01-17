@@ -146,6 +146,8 @@ function Copy-DbrDbTable {
                     $objectStep++
 
                     if ($object.Name -notin $destDb.Tables.Name) {
+                        $options = New-DbaScriptingOption
+
                         $operation = "Table [$($object.Schema)].[$($object.Name)]"
 
                         $params = @{
@@ -159,16 +161,28 @@ function Copy-DbrDbTable {
 
                         Write-Progress @params
 
-                        Write-PSFMessage -Level Verbose -Message "Creating table script for [$($object.Schema)].[$($object.Name)]"
+                        $options.IncludeIfNotExists = $true
 
-                        $null = $query.AppendLine("$($object | Export-DbaScript -Passthru -NoPrefix | Out-String)`n")
-
-                        foreach ($column in $object.Columns) {
+                        <# foreach ($column in $object.Columns) {
                             if ($column.DefaultConstraint.Text) {
                                 Write-PSFMessage -Level Verbose -Message "Creating default constraint script for [$($object.Schema)].[$($object.Name)].[$($column.Name)]"
                                 $null = $query.AppendLine("$($column.DefaultConstraint | Export-DbaScript -Passthru -NoPrefix | Out-String)`n")
                             }
+                        } #>
+
+                        [array]$primaryKeys = $object.Indexes | Where-Object IndexKeyType -eq 'DriPrimaryKey'
+
+                        if ($primaryKeys.Count -ge 1) {
+                            $options.DriPrimaryKey = $true
                         }
+
+                        if ($columns.DefaultConstraint) {
+                            $options.DriDefaults = $true
+                        }
+
+                        Write-PSFMessage -Level Verbose -Message "Creating table script for [$($object.Schema)].[$($object.Name)]"
+
+                        $null = $query.AppendLine("$($object | Export-DbaScript -Passthru -NoPrefix -ScriptingOptionsObject $options | Out-String)`n")
 
                         [PSCustomObject]@{
                             SourceSqlInstance      = $SourceSqlInstance
@@ -191,13 +205,14 @@ function Copy-DbrDbTable {
                             SqlInstance     = $DestinationSqlInstance
                             SqlCredential   = $DestinationSqlCredential
                             Database        = $DestinationDatabase
-                            Query           = $query
+                            Query           = $query.ToString()
                             EnableException = $true
                         }
 
                         Invoke-DbaQuery @params
                     }
                     catch {
+
                         Stop-PSFFunction -Message "Could not execute table script" -Target $query -ErrorRecord $_ -EnableException:$EnableException
                     }
                 }
