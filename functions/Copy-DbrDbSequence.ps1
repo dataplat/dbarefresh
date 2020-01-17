@@ -122,7 +122,7 @@ function Copy-DbrDbSequence {
         }
 
         if ($Sequence) {
-            [array]$sequences = $sequences | Where-Object Name -in $DataType
+            [array]$sequences = $sequences | Where-Object Name -in $Sequence
         }
     }
 
