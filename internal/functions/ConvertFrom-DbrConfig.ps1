@@ -57,7 +57,8 @@ function ConvertFrom-DbrConfig {
         foreach ($item in $objects.databases) {
             foreach ($table in $item.tables) {
                 if ($null -eq $table.query) {
-                    $columns = "[$($table.columns.name -join '],[')]"
+                    $columnObjects = $table.columns | Where-Object { $_.iscomputed -eq $false -and $_.isgenerated -eq $false } | Select-Object name -ExpandProperty name
+                    $columns = "[$($columnObjects -join '],[')]"
 
                     $query = "SELECT $($columns) FROM [$($item.sourcedatabase)].[$($table.schema)].[$($table.name)] "
 
