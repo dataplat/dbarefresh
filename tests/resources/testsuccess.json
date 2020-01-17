@@ -30,7 +30,9 @@
                                     9,
                                     10
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column2",
@@ -42,7 +44,9 @@
                                     "value1",
                                     "value2"
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column3",
@@ -53,7 +57,9 @@
                                 "values": [
                                     "value3"
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         }
                     ],
                     "query": null
@@ -69,12 +75,16 @@
                             "filter": {
                                 "type": "query",
                                 "query": "SELECT id FROM dbo.table1"
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column1",
                             "datatype": "int",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column3",
@@ -85,7 +95,9 @@
                                 "values": [
                                     "value3"
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         }
                     ],
                     "query": null
@@ -112,22 +124,30 @@
                                 "values": [
                                     1
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column1",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column2",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column3",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         }
                     ],
                     "query": null
@@ -140,17 +160,23 @@
                         {
                             "name": "id",
                             "datatype": "int",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column1",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column2",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         }
                     ],
                     "query": null
@@ -163,12 +189,16 @@
                         {
                             "name": "id",
                             "datatype": "int",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column1",
                             "datatype": "varchar",
-                            "filter": null
+                            "filter": null,
+                            "iscomputed": false,
+                            "isgenerated": false
                         },
                         {
                             "name": "column2",
@@ -179,7 +209,9 @@
                                 "values": [
                                     "value3"
                                 ]
-                            }
+                            },
+                            "iscomputed": false,
+                            "isgenerated": false
                         }
                     ],
                     "query": null
