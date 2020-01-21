@@ -32,7 +32,7 @@ function Copy-DbrDbForeignKey {
         Table to filter out
 
     .PARAMETER ForeignKey
-        Table to filter out
+        Foreign key to filter out
 
     .PARAMETER Force
         If set, the command will remove any objects that are present prior to creating them

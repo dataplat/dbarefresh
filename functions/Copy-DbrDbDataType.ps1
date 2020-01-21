@@ -29,7 +29,7 @@ function Copy-DbrDbDataType {
         Filter based on schema
 
     .PARAMETER DataType
-        View to filter out
+        Data type to filter out
 
     .PARAMETER Force
         If set, the command will remove any objects that are present prior to creating them
