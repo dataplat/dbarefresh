@@ -151,9 +151,16 @@ function New-DbrConfig {
                     Write-PSFMessage -Message "Retrieving columns from table [$($tableObject.Schema)].[$($tableObject.Name)]" -Level Verbose
 
                     foreach ($columnObject in $columns) {
+                        if (-not $columnObject.DataType.Name) {
+                            $dataType = ($columnObject.DataType.SqlDataType).ToString().toLower()
+                        }
+                        else {
+                            $dataType = ($columnObject.DataType.Name).ToString().ToLower()
+                        }
+
                         $columnObjectArray += [PSCustomObject]@{
                             Name        = $columnObject.Name
-                            Datatype    = $columnObject.datatype.name
+                            Datatype    = $dataType
                             Filter      = $null
                             IsComputed  = $columnObject.Computed
                             IsGenerated = $(if ($columnObject.GeneratedAlwaysType -eq 'None') { $false } else { $true } )
