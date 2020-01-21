@@ -17,8 +17,12 @@ Set-PSFConfig -Module PSDatabaseRefresh -Name 'Import.IndividualFiles' -Value $f
 $params = @{
     Module      = 'PSDatabaseRefresh'
     Name        = 'Config.SupportedDataTypes'
-    Initialize  = $true
-    Value       = @('bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'float', 'image', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'numeric', 'real', 'smalldatetime', 'smallint', 'text', 'time', 'tinyint', 'uniqueidentifier', 'userdefineddatatype', 'varbinary', 'varchar')
+    Value       = @(
+        'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'float',
+        'image', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'numeric', 'real', 'smalldatetime',
+        'smallint', 'text', 'time', 'tinyint', 'uniqueidentifier', 'userdefineddatatype', 'varbinary',
+        'varchar', 'xml'
+    )
     Description = 'Supported data types used in several command to filter out columns'
 }
 Set-PSFConfig @params
@@ -26,7 +30,6 @@ Set-PSFConfig @params
 $params = @{
     Module      = 'PSDatabaseRefresh'
     Name        = 'Config.SupportedOperators'
-    Initialize  = $true
     Value       = @('eq', '=', 'in', 'le', '<=', 'lt', '<', 'ge', '>=', 'gt', '>', 'like')
     Description = 'Supported operators used to tests the JSON file'
 }
