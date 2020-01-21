@@ -55,9 +55,9 @@ function Test-DbrConfig {
         $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedDataTypes
         $supportedOperators = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedOperators
 
-        $requiredDatabaseProperties = 'sourceinstance', 'destinationinstance', 'sourcedatabase', 'destinationdatabase', 'tables'
-        $requiredTableProperties = 'fullname', 'schema', 'name', 'columns', 'query'
-        $requiredColumnProperties = 'name', 'datatype', 'filter', 'iscomputed', 'isgenerated'
+        $requiredDatabaseProperties = 'SourceInstance', 'DestinationInstance', 'SourceDatabase', 'DestinationDatabase', 'Tables'
+        $requiredTableProperties = 'FullName', 'Schema', 'Name', 'Columns', 'Query'
+        $requiredColumnProperties = 'Name', 'DataType', 'Filter', 'IsComputed', 'IsGenerated'
     }
 
     process {
