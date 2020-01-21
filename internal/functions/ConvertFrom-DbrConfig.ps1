@@ -55,7 +55,7 @@ function ConvertFrom-DbrConfig {
         if (Test-PSFFunctionInterrupt) { return }
 
         foreach ($item in $objects.Databases) {
-            $item = $item | Sort-Object { $_.Tables.name }
+            $item = $item | Sort-Object { $_.Tables.Name }
 
             foreach ($table in $item.Tables) {
                 if ($null -eq $table.Query) {
