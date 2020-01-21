@@ -1,5 +1,5 @@
 $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
-. "$PSScriptRoot\..\constants.ps1"
+. "$PSScriptRoot\constants.ps1"
 
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
@@ -13,8 +13,8 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$CommandName Integration Tests" -Tag 'IntegrationTests' {
 
     BeforeAll {
-        $jsonFilePathFail = "$PSScriptRoot\..\..\resources\testfail.json"
-        $jsonFilePathSuccess = "$PSScriptRoot\..\..\resources\testsuccess.json"
+        $jsonFilePathFail = "$PSScriptRoot\..\resources\testfail.json"
+        $jsonFilePathSuccess = "$PSScriptRoot\..\resources\testsuccess.json"
     }
 
     Context "Test for errors" {
