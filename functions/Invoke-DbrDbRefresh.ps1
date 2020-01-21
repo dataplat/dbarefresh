@@ -602,9 +602,10 @@ function Invoke-DbrDbRefresh {
                                 KeepIdentity             = $true
                                 KeepNulls                = $true
                                 Table                    = $null
+                                DestinationTable         = $null
                                 Truncate                 = $false
                                 Query                    = $null
-                                EnableException          = $EnableException
+                                EnableException          = $true
                             }
 
                             foreach ($itemTable in $item.tables) {
@@ -631,17 +632,35 @@ function Invoke-DbrDbRefresh {
                                 # Check if the data needs to be copied or that the only the table needs to be created
                                 if ($rowCountSource -ge 1) {
                                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
-
                                         $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
 
-                                        try {
-                                            Write-PSFMessage -Level Verbose -Message "Copying data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
+                                        <# if ($sourceTableObject.Columns.Count -ne $itemTable.Columns.Count) {
+                                            $columns = "[$($itemTable.Columns.Name -join '],[')]"
 
-                                            $copyParams.Query = $itemTable.query
+                                            $query = "CREATE VIEW [dbo].[View__$($sourceTableObject.Schema)_$($sourceTableObject.Name)] AS SELECT $columns FROM $($sourceTableObject.Schema).$($sourceTableObject.Name);"
+                                            try {
+                                                Invoke-DbaQuery -SqlInstance $item.DestinationInstance -SqlCredential $DestinationSqlCredential -Database $destDb.Name -Query $query
+                                            }
+                                            catch {
+                                                Stop-PSFFunction -Message "Could not create view for table [$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]" -ErrorRecord $_
+                                            }
+
+                                            $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
+                                            $copyParams.DestinationTable = "[dbo].[View__$($sourceTableObject.Schema)_$($sourceTableObject.Name)]"
+                                        }
+                                        else {
+                                            $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
+                                            $copyParams.DestinationTable = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
+                                        } #>
+
+
+                                        Write-PSFMessage -Level Verbose -Message "Copying data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
+                                        try {
+                                            $copyParams.Query = $itemTable.Query
+
                                             $results += Copy-DbaDbTableData @copyParams
 
                                             #$destDb.Refresh()
-                                            $itemTable.query
                                         }
                                         catch {
                                             $params = @{
@@ -651,7 +670,10 @@ function Invoke-DbrDbRefresh {
                                                 EnableException = $EnableException
                                             }
 
+                                            $copyParams | Ft
+
                                             Stop-PSFFunction @params
+                                            return
                                         }
                                     }
 
@@ -664,13 +686,15 @@ function Invoke-DbrDbRefresh {
                                     $stopwatchObject.Stop()
 
                                     [PSCustomObject]@{
-                                        SqlInstance    = $destInstance
-                                        Database       = $destDb.Name
-                                        ObjectType     = "Table"
-                                        Parent         = "N/A"
-                                        Object         = "$($itemTable.Schema).$($itemTable.Name)"
-                                        Notes          = "Copied $($rowCountDest) of $($rowCountSource) rows"
-                                        ElapsedSeconds = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
+                                        SourceSqlInstance        = $sourceServer
+                                        SourceSqlCredential      = $SourceSqlCredential
+                                        DestinationSqlInstance   = $destServer
+                                        DestinationSqlCredential = $DestinationSqlCredential
+                                        ObjectType               = "Table"
+                                        Parent                   = "N/A"
+                                        Object                   = "$($itemTable.Schema).$($itemTable.Name)"
+                                        Notes                    = "Copied $($rowCountDest) of $($rowCountSource) rows"
+                                        ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                                     }
                                 }
 
