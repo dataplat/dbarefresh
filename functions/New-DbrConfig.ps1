@@ -152,34 +152,34 @@ function New-DbrConfig {
 
                     foreach ($columnObject in $columns) {
                         $columnObjectArray += [PSCustomObject]@{
-                            name        = $columnObject.Name
-                            datatype    = $columnObject.datatype.name
-                            filter      = $null
-                            iscomputed  = $columnObject.Computed
-                            isgenerated = $(if ($columnObject.GeneratedAlwaysType -eq 'None') { $false } else { $true } )
+                            Name        = $columnObject.Name
+                            Datatype    = $columnObject.datatype.name
+                            Filter      = $null
+                            IsComputed  = $columnObject.Computed
+                            IsGenerated = $(if ($columnObject.GeneratedAlwaysType -eq 'None') { $false } else { $true } )
                         }
                     }
 
                     $tableObjectArray += [PSCustomObject]@{
-                        fullname = "$($tableObject.Schema).$($tableObject.Name)"
-                        schema   = $tableObject.Schema
-                        name     = $tableObject.Name
-                        columns  = $columnObjectArray
-                        query    = $null
+                        FullName = "$($tableObject.Schema).$($tableObject.Name)"
+                        Schema   = $tableObject.Schema
+                        Name     = $tableObject.Name
+                        Columns  = $columnObjectArray
+                        Query    = $null
                     }
                 }
 
                 $databaseObjectArray += [PSCustomObject]@{
-                    sourceinstance      = $server.DomainInstanceName
-                    destinationinstance = $server.DomainInstanceName
-                    sourcedatabase      = $db.Name
-                    destinationdatabase = $db.Name
-                    tables              = $tableObjectArray
+                    SourceInstance      = $server.DomainInstanceName
+                    DestinationInstance = $server.DomainInstanceName
+                    SourceDatabase      = $db.Name
+                    DestinationDatabase = $db.Name
+                    Tables              = $tableObjectArray
                 }
             }
 
             $config += [PSCustomObject]@{
-                databases = $databaseObjectArray
+                Databases = $databaseObjectArray
             }
         }
 

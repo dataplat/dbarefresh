@@ -54,27 +54,29 @@ function ConvertFrom-DbrConfig {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        foreach ($item in $objects.databases) {
-            foreach ($table in $item.tables) {
-                if ($null -eq $table.query) {
-                    $columnObjects = $table.columns | Where-Object { $_.iscomputed -eq $false -and $_.isgenerated -eq $false } | Select-Object name -ExpandProperty name
+        foreach ($item in $objects.Databases) {
+            $item = $item | Sort-Object { $_.Tables.name }
+
+            foreach ($table in $item.Tables) {
+                if ($null -eq $table.Query) {
+                    $columnObjects = $table.Columns | Where-Object { $_.IsComputed -eq $false -and $_.IsGenerated -eq $false } | Select-Object Name -ExpandProperty Name
                     $columns = "[$($columnObjects -join '],[')]"
 
-                    $query = "SELECT $($columns) FROM [$($item.sourcedatabase)].[$($table.schema)].[$($table.name)] "
+                    $query = "SELECT $($columns) FROM [$($item.Sourcedatabase)].[$($table.Schema)].[$($table.Name)] "
 
                     $filters = @()
 
-                    foreach ($column in $table.columns) {
-                        switch ($column.filter.type) {
+                    foreach ($column in $table.Columns) {
+                        switch ($column.Filter.Type) {
                             "static" {
-                                if (-not $null -eq $column.filter) {
+                                if (-not $null -eq $column.Filter) {
                                     $compareOperator = $null
 
-                                    if (($column.filter.values).Count -ge 2) {
+                                    if (($column.Filter.Values).Count -ge 2) {
                                         $compareOperator = "IN"
                                     }
                                     else {
-                                        switch ($column.filter.comparison) {
+                                        switch ($column.Filter.Comparison) {
                                             { $_ -in "eq", "=" } {
                                                 $compareOperator = '='
                                             }
@@ -102,18 +104,18 @@ function ConvertFrom-DbrConfig {
                                         }
                                     }
 
-                                    switch ($column.datatype) {
-                                        "int" {
-                                            $filters += "[$($column.name)] $($compareOperator) ($($column.filter.values -join ","))"
+                                    switch ($column.Datatype) {
+                                        { $_ -in 'bigint', 'bit', 'int', 'smallint', 'tinyint' } {
+                                            $filters += "[$($column.Name)] $($compareOperator) ($($column.Filter.Values -join ","))"
                                         }
-                                        "varchar" {
-                                            $filters += "[$($column.name)] $($compareOperator) ('$($column.filter.values -join "','")')"
+                                        { $_ -in 'char', 'date', 'datetime', 'datetime2', 'nchar', 'nvarchar', 'uniqueidentifier', 'varchar' } {
+                                            $filters += "[$($column.Name)] $($compareOperator) ('$($column.Filter.Values -join "','")')"
                                         }
                                     }
                                 }
                             }
                             "query" {
-                                $filters += "[$($column.name)] IN ($($column.filter.query))"
+                                $filters += "[$($column.Name)] IN ($($column.Filter.Query))"
                             }
                         }
                     }
@@ -122,7 +124,7 @@ function ConvertFrom-DbrConfig {
                         $query += "WHERE $($filters -join ' AND ')"
                     }
 
-                    $table.query = $query
+                    $table.Query = $query
                 }
             }
         }
