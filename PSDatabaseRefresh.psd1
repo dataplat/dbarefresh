@@ -50,6 +50,7 @@
 	'Copy-DbrDbTable',
 	'Copy-DbrDbTableType',
 	'Copy-DbrDbView',
+	'Copy-DbrDbXmlSchemaCollection',
 	'Invoke-DbrDbRefresh',
 	'New-DbrDatabase',
 	'New-DbrConfig',
@@ -62,7 +63,9 @@
 	'Remove-DbrDbStoredProcedure',
 	'Remove-DbrDbTable',
 	'Remove-DbrDbTableType',
-	'Remove-DbrDbView'
+	'Remove-DbrDbView',
+	'Remove-DbrDbXmlSchemaCollection',
+	'Test-DbrConfig'
 
 	# Cmdlets to export from this module
 	CmdletsToExport   = ''

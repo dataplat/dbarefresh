@@ -28,6 +28,9 @@ function Invoke-DbrDbRefresh {
     .PARAMETER DestinationDatabase
         Filter database(s) to copy data to
 
+    .PARAMETER SkipForeignKey
+        Skip foreign keys
+
     .PARAMETER SkipFunction
         Skip function objects
 
@@ -49,11 +52,17 @@ function Invoke-DbrDbRefresh {
     .PARAMETER SkipSequences
         Skip the part of copying the sequences
 
-    .PARAMETER SkipUserDefinedDataType
+    .PARAMETER SkipDataType
         Skip the user defined data type
 
-    .PARAMETER SkipUserDefinedTableType
+    .PARAMETER SkipTableType
         Skip the user defined table type
+
+    .PARAMETER SkipXmlSchemaCollection
+        Skip the XML schema collection
+
+    .PARAMETER SkipForeignKeyDrop
+        Skip the dropping of foreign keys
 
     .PARAMETER SkipFunctionDrop
         Skip the dropping of functions
@@ -78,6 +87,9 @@ function Invoke-DbrDbRefresh {
 
     .PARAMETER SkipSequenceaDrop
         Skip the dropping of sequences
+
+    .PARAMETER SkipXmlSchemaCollectionDrop
+        Skip the dropping of XML schema collection
 
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
@@ -118,6 +130,7 @@ function Invoke-DbrDbRefresh {
         [PSCredential]$DestinationSqlCredential,
         [string[]]$SourceDatabase,
         [string[]]$DestinationDatabase,
+        [switch]$SkipForeignKey,
         [switch]$SkipFunction,
         [switch]$SkipProcedure,
         [switch]$SkipTable,
@@ -125,8 +138,9 @@ function Invoke-DbrDbRefresh {
         [switch]$SkipData,
         [switch]$SkipSchema,
         [switch]$SkipSequence,
-        [switch]$SkipUserDefinedDataType,
-        [switch]$SkipUserDefinedTableType,
+        [switch]$SkipDataType,
+        [switch]$SkipTableType,
+        [switch]$SkipForeignKeyDrop,
         [switch]$SkipFunctionDrop,
         [switch]$SkipProcedureDrop,
         [switch]$SkipTableDrop,
@@ -151,7 +165,7 @@ function Invoke-DbrDbRefresh {
         # Get the databases from the config
         try {
             $items = @()
-            $items += ConvertFrom-DbrConfig -FilePath $FilePath -EnableException | Select-Object databases -ExpandProperty databases
+            $items += ConvertFrom-DbrConfig -FilePath $FilePath -EnableException | Select-Object Databases -ExpandProperty Databases
         }
         catch {
             Stop-PSFFunction -Message "Something went wrong converting the configuration file" -ErrorRecord $_ -Target $FilePath
@@ -206,12 +220,12 @@ function Invoke-DbrDbRefresh {
                 $sourceServer = Connect-DbaInstance -SqlInstance $item.SourceInstance -SqlCredential $SourceSqlCredential -ClientName $ClientName -MultipleActiveResultSets
             }
             catch {
-                Stop-PSFFunction -Message "Could not connect to $($item.SourceInstance)" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError -EnableException:$EnableException
+                Stop-PSFFunction -Message "Could not connect to $($item.SourceInstance)" -Target $SourceSqlInstance -ErrorRecord $_ -Category ConnectionError -Continue
                 return
             }
 
             if ($item.SourceDatabase -notin $sourceServer.Databases.Name) {
-                Stop-PSFFunction -Message "Source database [$($item.SourceDatabase)] could not be found on $sourceServer" -Target $item.SourceDatabase -Continue -EnableException:$EnableException
+                Stop-PSFFunction -Message "Source database [$($item.SourceDatabase)] could not be found on $sourceServer" -Target $item.SourceDatabase -Continue
             }
 
             $sourceDb = $sourceServer.Databases[$item.SourceDatabase]
@@ -229,10 +243,10 @@ function Invoke-DbrDbRefresh {
                     $destServer = Connect-DbaInstance -SqlInstance $destInstance -SqlCredential $DestinationSqlCredential -ClientName $ClientName -MultipleActiveResultSets
                 }
                 catch {
-                    Stop-PSFFunction -Message "Could not connect to $destInstance" -Target $destInstance -ErrorRecord $_ -Category ConnectionError -EnableException:$EnableException
+                    Stop-PSFFunction -Message "Could not connect to $destInstance" -Target $destInstance -ErrorRecord $_ -Category ConnectionError -Continue
                 }
 
-                $totalSteps = 15
+                $totalSteps = 20
                 $currentStep = 1
                 $progressId = 1
 
@@ -257,7 +271,7 @@ function Invoke-DbrDbRefresh {
                             New-DbrDatabase @dbParams
                         }
                         catch {
-                            Stop-PSFFunction -Message "Could not create database $($item.DestinationDatabase)" -ErrorRecord $_ -Target $destInstance -EnableException:$EnableException -Continue
+                            Stop-PSFFunction -Message "Could not create database $($item.DestinationDatabase)" -ErrorRecord $_ -Target $destInstance -Continue
                         }
 
                         $destServer.Databases.Refresh()
@@ -284,129 +298,19 @@ function Invoke-DbrDbRefresh {
 
                     Write-Progress @params
 
-                    if (-not $SkipView) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
-                            try {
-                                Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
+                        try {
+                            Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name
                         }
-                    }
-                }
-
-                # Drop all stored procedures
-                if (-not $SkipProcedureDrop) {
-                    $currentStep = 3
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Stored Procedure(s)"
-                    }
-
-                    Write-Progress @params
-
-                    if (-not $SkipProcedure) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
-                            try {
-                                Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
-                        }
-                    }
-                }
-
-                # Drop all user defined functions
-                if (-not $SkipFunctionDrop) {
-                    $currentStep = 4
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Function(s)"
-                    }
-
-                    Write-Progress @params
-
-                    if (-not $SkipFunction) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
-                            try {
-                                Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
-                        }
-                    }
-                }
-
-                # Drop all user defined data types
-                if (-not $SkipDataTypeDrop) {
-                    $currentStep = 5
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Data Type(s)"
-                    }
-
-                    Write-Progress @params
-
-                    if (-not $SkipFunction) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
-                            try {
-                                Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
-                        }
-                    }
-                }
-
-                # Drop all user defined table types
-                if (-not $SkipTableTypeDrop) {
-                    $currentStep = 6
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Table Type(s)"
-                    }
-
-                    Write-Progress @params
-
-                    if (-not $SkipFunction) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
-                            try {
-                                Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the views" -Target $destServer -ErrorRecord $_ -Continue
                         }
                     }
                 }
 
                 # Drop all sequences
                 if (-not $SkipSequenceDrop) {
-                    $currentStep = 6
+                    $currentStep = 3
 
                     $params = @{
                         Id               = ($progressId + 1)
@@ -419,21 +323,195 @@ function Invoke-DbrDbRefresh {
 
                     Write-Progress @params
 
-                    if (-not $SkipSequence) {
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
-                            try {
-                                Remove-DbrDbSequence -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
-                            }
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
+                        try {
+                            Remove-DbrDbSequence -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all stored procedures
+                if (-not $SkipProcedureDrop) {
+                    $currentStep = 4
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing Stored Procedure(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
+                        try {
+                            Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the stored procedures" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all foreign keys
+                if (-not $SkipForeignKeyDrop) {
+                    $currentStep = 5
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing Foreign Key(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing foreign key(s)")) {
+                        try {
+                            Remove-DbrDbForeignKey -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the foreign keys" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all tables
+                if (-not $SkipTableDrop) {
+                    $currentStep = 6
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing Table(s)"
+                    }
+
+                    Write-Progress @params
+
+                    # Remove the tables
+                    if ($PSCmdlet.ShouldProcess("$destServer", "Removing table(s)")) {
+                        try {
+                            Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDb -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all user defined functions
+                if (-not $SkipFunctionDrop) {
+                    $currentStep = 7
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing User Defined Function(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
+                        try {
+                            Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the functions" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all user defined data types
+                if (-not $SkipDataTypeDrop) {
+                    $currentStep = 8
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing User Defined Data Type(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
+                        try {
+                            Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the data types" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all user defined table types
+                if (-not $SkipTableTypeDrop) {
+                    $currentStep = 9
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing User Defined Table Type(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
+                        try {
+                            Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the table types" -Target $destServer -ErrorRecord $_ -Continue
+                        }
+                    }
+                }
+
+                # Drop all sequences
+                if (-not $SkipXmlSchemaCollectionDrop) {
+                    $currentStep = 10
+
+                    $params = @{
+                        Id               = ($progressId + 1)
+                        ParentId         = $progressId
+                        Activity         = "Refreshing database"
+                        Status           = 'Progress->'
+                        PercentComplete  = $($currentStep / $totalSteps * 100)
+                        CurrentOperation = "Removing Sequence(s)"
+                    }
+
+                    Write-Progress @params
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
+                        try {
+                            Remove-DbrDbXmlSchemaCollection -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong dropping the XML schema collections" -Target $destServer -ErrorRecord $_ -Continue
                         }
                     }
                 }
 
                 # Drop all schemas
                 if (-not $SkipSchemaDrop) {
-                    $currentStep = 7
+                    $currentStep = 11
 
                     $params = @{
                         Id               = ($progressId + 1)
@@ -449,10 +527,10 @@ function Invoke-DbrDbRefresh {
                     if (-not $SkipSchema) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing Schema(s)")) {
                             try {
-                                Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException -Force
+                                Remove-DbrDbSchema -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
                             }
                             catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_ -EnableException:$EnableException
+                                Stop-PSFFunction -Message "Something went wrong dropping the schema" -Target $destServer -ErrorRecord $_ -Continue
                             }
                         }
                     }
@@ -502,6 +580,46 @@ function Invoke-DbrDbRefresh {
 
                 #endregion data type copy
 
+                #region table type copy
+
+                if (-not $SkipTableType) {
+                    $params = @{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
+                        EnableException          = $true
+                    }
+
+                    Copy-DbrDbTableType @params
+
+                    $destDb.Refresh()
+                }
+
+                #endregion table type copy
+
+                #region function copy
+
+                if (-not $SkipFunction) {
+                    $params = @{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
+                        EnableException          = $true
+                    }
+
+                    Copy-DbrDbFunction @params
+
+                    $destDb.Refresh()
+                }
+
+                #endregion function copy
+
                 #region sequence copy
 
                 if (-not $SkipSequence) {
@@ -522,9 +640,29 @@ function Invoke-DbrDbRefresh {
 
                 #endregion sequence copy
 
+                #region XML schema collection copy
+
+                if (-not $SkipXmlSchemaCollection) {
+                    $params = @{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
+                        EnableException          = $true
+                    }
+
+                    Copy-DbrDbXmlSchemaCollection @params
+
+                    $destDb.Refresh()
+                }
+
+                #endregion XML schema collection copy
+
                 #region table copy
 
-                $currentStep = 8
+                $currentStep = 12
 
                 $params = @{
                     Id               = ($progressId + 1)
@@ -540,23 +678,6 @@ function Invoke-DbrDbRefresh {
                 if (-not $SkipTable) {
 
                     $sourceTables = $sourceDb.Tables | Sort-Object Name
-
-                    if (-not $SkipTableDrop) {
-                        $task = "Removing tables"
-                        Write-Progress -Id ($progressId + 2) -ParentId ($progressId + 1) -Activity $task
-
-                        # Remove the tables
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table(s)")) {
-                            try {
-                                Remove-DbrDbTable -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
-                            }
-                            catch {
-                                Stop-PSFFunction -Message "Something went wrong dropping the tables" -Target $destDb -ErrorRecord $_ -EnableException:$EnableException
-                            }
-                        }
-
-                        $destDb.Refresh()
-                    }
 
                     if (-not $SkipTable) {
                         $totalObjects = $sourceTables.Count
@@ -589,11 +710,12 @@ function Invoke-DbrDbRefresh {
                         $objectStep = 0
 
                         if (-not $SkipData) {
+
                             $copyParams = @{
                                 SqlInstance              = $sourceServer
                                 SqlCredential            = $SourceSqlCredential
                                 Database                 = $sourceDb.Name
-                                Destination              = $item.DestinationInstance
+                                Destination              = $destServer
                                 DestinationSqlCredential = $DestinationSqlCredential
                                 DestinationDatabase      = $destDb.Name
                                 AutoCreateTable          = $false
@@ -608,8 +730,7 @@ function Invoke-DbrDbRefresh {
                                 EnableException          = $true
                             }
 
-                            foreach ($itemTable in $item.tables) {
-
+                            foreach ($itemTable in $item.Tables) {
                                 $objectStep++
                                 $operation = "Table [$($itemTable.Schema)].[$($itemTable.Name)]"
 
@@ -624,6 +745,9 @@ function Invoke-DbrDbRefresh {
 
                                 Write-Progress @progressParams
 
+                                $copyParams.Table = "[$($itemTable.Schema)].[$($itemTable.Name)]"
+                                $copyParams.DestinationTable = "[$($itemTable.Schema)].[$($itemTable.Name)]"
+
                                 $sourceTableObject = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
                                 $rowCountSource = $sourceTableObject.RowCount
 
@@ -632,7 +756,8 @@ function Invoke-DbrDbRefresh {
                                 # Check if the data needs to be copied or that the only the table needs to be created
                                 if ($rowCountSource -ge 1) {
                                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
-                                        $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
+
+                                        $copyParams.Query = $itemTable.Query
 
                                         <# if ($sourceTableObject.Columns.Count -ne $itemTable.Columns.Count) {
                                             $columns = "[$($itemTable.Columns.Name -join '],[')]"
@@ -653,24 +778,23 @@ function Invoke-DbrDbRefresh {
                                             $copyParams.DestinationTable = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
                                         } #>
 
+                                        $destDb.Tables.Refresh()
 
                                         Write-PSFMessage -Level Verbose -Message "Copying data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
                                         try {
-                                            $copyParams.Query = $itemTable.Query
-
-                                            $results += Copy-DbaDbTableData @copyParams
-
-                                            #$destDb.Refresh()
+                                            $null = Copy-DbaDbTableData @copyParams
                                         }
                                         catch {
                                             $params = @{
-                                                Message         = "Could not copy data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
-                                                Target          = $sourceTableObject
-                                                ErrorRecord     = $_
-                                                EnableException = $EnableException
+                                                Message     = "Could not copy data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
+                                                Target      = $itemTable
+                                                ErrorRecord = $_
+                                                Continue    = $true
                                             }
 
                                             $copyParams | Ft
+
+                                            $itemTable.Query
 
                                             Stop-PSFFunction @params
                                             return
@@ -716,7 +840,7 @@ function Invoke-DbrDbRefresh {
                         }
 
                         # Create the indexes
-                        $currentStep = 9
+                        $currentStep = 13
                         $totalObjects = $sourceTables.Indexes.Count
                         $objectStep = 0
                         $task = "Creating Indexes"
@@ -748,7 +872,7 @@ function Invoke-DbrDbRefresh {
                             $destDb.Refresh()
                         }
 
-                        $currentStep = 10
+                        $currentStep = 14
 
                         $progressParams = @{
                             Id               = ($progressId + 1)

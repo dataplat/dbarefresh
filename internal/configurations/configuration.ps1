@@ -20,7 +20,7 @@ $params = @{
     Value       = @(
         'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'float',
         'image', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'numeric', 'real', 'smalldatetime',
-        'smallint', 'text', 'time', 'tinyint', 'uniqueidentifier', 'userdefineddatatype', 'varbinary',
+        'smallint', 'sysname', 'text', 'time', 'tinyint', 'uniqueidentifier', 'userdefineddatatype', 'varbinary',
         'varchar', 'xml'
     )
     Description = 'Supported data types used in several command to filter out columns'
