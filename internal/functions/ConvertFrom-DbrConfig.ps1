@@ -108,7 +108,7 @@ function ConvertFrom-DbrConfig {
                                         { $_ -in 'bigint', 'bit', 'int', 'smallint', 'tinyint' } {
                                             $filters += "[$($column.Name)] $($compareOperator) ($($column.Filter.Values -join ","))"
                                         }
-                                        { $_ -in 'char', 'date', 'datetime', 'datetime2', 'nchar', 'nvarchar', 'uniqueidentifier', 'varchar' } {
+                                        { $_ -in 'char', 'date', 'datetime', 'datetime2', 'nchar', 'nvarchar', 'uniqueidentifier', 'varchar', 'varbinary' } {
                                             $filters += "[$($column.Name)] $($compareOperator) ('$($column.Filter.Values -join "','")')"
                                         }
                                     }
