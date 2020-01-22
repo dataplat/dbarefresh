@@ -192,12 +192,8 @@ function Invoke-DbrDbRefresh {
             $items = $items | Where-Object { $_.DestinationDatabase -in $DestinationDatabase }
         }
 
-
         $stopwatchTotal = New-Object System.Diagnostics.Stopwatch
         $stopwatchObject = New-Object System.Diagnostics.Stopwatch
-
-        $results = @()
-
     }
 
     process {
@@ -250,6 +246,15 @@ function Invoke-DbrDbRefresh {
                 $currentStep = 1
                 $progressId = 1
 
+                $progressParams = @{
+                    Id               = ($progressId + 1)
+                    ParentId         = $progressId
+                    Activity         = "Refreshing database"
+                    Status           = 'Progress->'
+                    PercentComplete  = $null
+                    CurrentOperation = $null
+                }
+
                 # Loop through the databases
                 Write-PSFMessage -Level Host -Message "Provisioning $($item.DestinationDatabase) from $sourceServer to $destServer"
 
@@ -284,20 +289,14 @@ function Invoke-DbrDbRefresh {
                 #region remove object
 
                 # Drop all views
+                $currentStep = 2
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing View(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipViewDrop) {
-                    $currentStep = 2
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing View(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
                         try {
                             Remove-DbrDbView -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name
@@ -309,20 +308,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all sequences
+                $currentStep = 3
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Sequence(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipSequenceDrop) {
-                    $currentStep = 3
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Sequence(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
                         try {
                             Remove-DbrDbSequence -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -334,20 +327,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all stored procedures
+                $currentStep = 4
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Stored Procedure(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipProcedureDrop) {
-                    $currentStep = 4
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Stored Procedure(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
                         try {
                             Remove-DbrDbStoredProcedure -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -359,20 +346,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all foreign keys
+                $currentStep = 5
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Foreign Key(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipForeignKeyDrop) {
-                    $currentStep = 5
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Foreign Key(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing foreign key(s)")) {
                         try {
                             Remove-DbrDbForeignKey -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -384,20 +365,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all tables
+                $currentStep = 6
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Table(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipTableDrop) {
-                    $currentStep = 6
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Table(s)"
-                    }
-
-                    Write-Progress @params
-
                     # Remove the tables
                     if ($PSCmdlet.ShouldProcess("$destServer", "Removing table(s)")) {
                         try {
@@ -410,20 +385,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all user defined functions
+                $currentStep = 7
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Function(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipFunctionDrop) {
-                    $currentStep = 7
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Function(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
                         try {
                             Remove-DbrDbFunction -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -435,20 +404,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all user defined data types
+                $currentStep = 8
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Data Type(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipDataTypeDrop) {
-                    $currentStep = 8
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Data Type(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
                         try {
                             Remove-DbrDbDataType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -460,20 +423,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all user defined table types
+                $currentStep = 9
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Table Type(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipTableTypeDrop) {
-                    $currentStep = 9
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing User Defined Table Type(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
                         try {
                             Remove-DbrDbTableType -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -485,20 +442,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all sequences
+                $currentStep = 10
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Sequence(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipXmlSchemaCollectionDrop) {
-                    $currentStep = 10
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Sequence(s)"
-                    }
-
-                    Write-Progress @params
-
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
                         try {
                             Remove-DbrDbXmlSchemaCollection -SqlInstance $destServer -SqlCredential $DestinationSqlCredential -Database $destDb.Name -EnableException
@@ -510,20 +461,14 @@ function Invoke-DbrDbRefresh {
                 }
 
                 # Drop all schemas
+                $currentStep = 11
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Removing Schema(s)"
+
+                Write-Progress $progressParams
+
                 if (-not $SkipSchemaDrop) {
-                    $currentStep = 11
-
-                    $params = @{
-                        Id               = ($progressId + 1)
-                        ParentId         = $progressId
-                        Activity         = "Refreshing database"
-                        Status           = 'Progress->'
-                        PercentComplete  = $($currentStep / $totalSteps * 100)
-                        CurrentOperation = "Removing Schema(s)"
-                    }
-
-                    Write-Progress @params
-
                     if (-not $SkipSchema) {
                         if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing Schema(s)")) {
                             try {
@@ -541,6 +486,12 @@ function Invoke-DbrDbRefresh {
                 #region create object
 
                 #region schema copy
+                $currentStep = 12
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating Schemas"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipSchema) {
                     $params = @{
@@ -557,10 +508,15 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion schema copy
 
                 #region data type copy
+                $currentStep = 13
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating Data Types"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipDataType) {
                     $params = @{
@@ -577,10 +533,15 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion data type copy
 
                 #region table type copy
+                $currentStep = 14
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating Table Types"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipTableType) {
                     $params = @{
@@ -597,10 +558,15 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion table type copy
 
                 #region function copy
+                $currentStep = 15
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating Functions"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipFunction) {
                     $params = @{
@@ -617,10 +583,15 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion function copy
 
                 #region sequence copy
+                $currentStep = 16
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating Sequences"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipSequence) {
                     $params = @{
@@ -637,10 +608,15 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion sequence copy
 
                 #region XML schema collection copy
+                $currentStep = 17
+
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Creating XML Schema Collections"
+
+                Write-Progress $progressParams
 
                 if (-not $SkipXmlSchemaCollection) {
                     $params = @{
@@ -657,23 +633,16 @@ function Invoke-DbrDbRefresh {
 
                     $destDb.Refresh()
                 }
-
                 #endregion XML schema collection copy
 
                 #region table copy
 
-                $currentStep = 12
+                $currentStep = 18
 
-                $params = @{
-                    Id               = ($progressId + 1)
-                    ParentId         = $progressId
-                    Activity         = "Refreshing database"
-                    Status           = 'Progress->'
-                    PercentComplete  = $($currentStep / $totalSteps * 100)
-                    CurrentOperation = "Processing Tables"
-                }
+                $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                $progressParams.CurrentOperation = "Processing Tables"
 
-                Write-Progress @params
+                Write-Progress $progressParams
 
                 if (-not $SkipTable) {
 
@@ -730,20 +699,24 @@ function Invoke-DbrDbRefresh {
                                 EnableException          = $true
                             }
 
+                            $progressParams2 = @{
+                                Id               = ($progressId + 2)
+                                ParentId         = ($progressId + 1)
+                                Activity         = $task
+                                Status           = $null
+                                PercentComplete  = $null
+                                CurrentOperation = $operation
+                            }
+
                             foreach ($itemTable in $item.Tables) {
                                 $objectStep++
                                 $operation = "Table [$($itemTable.Schema)].[$($itemTable.Name)]"
 
-                                $progressParams = @{
-                                    Id               = ($progressId + 2)
-                                    ParentId         = ($progressId + 1)
-                                    Activity         = $task
-                                    Status           = "Progress-> Table $objectStep of $totalObjects"
-                                    PercentComplete  = $($objectStep / $totalObjects * 100)
-                                    CurrentOperation = $operation
-                                }
+                                $progressParams2.Status = "Progress-> Table $objectStep of $totalObjects"
+                                $progressParams2.PercentComplete = $($objectStep / $totalObjects * 100)
+                                $progressParams2.CurrentOperation = $operation
 
-                                Write-Progress @progressParams
+                                Write-Progress @progressParams2
 
                                 $copyParams.Table = "[$($itemTable.Schema)].[$($itemTable.Name)]"
                                 $copyParams.DestinationTable = "[$($itemTable.Schema)].[$($itemTable.Name)]"
@@ -840,19 +813,10 @@ function Invoke-DbrDbRefresh {
                         }
 
                         # Create the indexes
-                        $currentStep = 13
-                        $totalObjects = $sourceTables.Indexes.Count
-                        $objectStep = 0
-                        $task = "Creating Indexes"
+                        $currentStep = 19
 
-                        $progressParams = @{
-                            Id               = ($progressId + 1)
-                            ParentId         = $progressId
-                            Activity         = "Refreshing database"
-                            Status           = 'Progress->'
-                            PercentComplete  = $($currentStep / $totalSteps * 100)
-                            CurrentOperation = "Creating Indexe(s)"
-                        }
+                        $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                        $progressParams.CurrentOperation = "Creating Indexe(s)"
 
                         Write-Progress @progressParams
 
@@ -872,16 +836,10 @@ function Invoke-DbrDbRefresh {
                             $destDb.Refresh()
                         }
 
-                        $currentStep = 14
+                        $currentStep = 20
 
-                        $progressParams = @{
-                            Id               = ($progressId + 1)
-                            ParentId         = $progressId
-                            Activity         = "Refreshing database"
-                            Status           = 'Progress->'
-                            PercentComplete  = $($currentStep / $totalSteps * 100)
-                            CurrentOperation = "Creating Foreign Key(s)"
-                        }
+                        $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                        $progressParams.CurrentOperation = "Creating Foreign Key(s)"
 
                         Write-Progress @progressParams
 
