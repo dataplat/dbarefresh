@@ -192,6 +192,8 @@ function Invoke-DbrDbRefresh {
             $items = $items | Where-Object { $_.DestinationDatabase -in $DestinationDatabase }
         }
 
+        Add-Type -ReferencedAssemblies System.Data.dll -TypeDefinition $sourcecode -ErrorAction Stop
+
         $stopwatchTotal = New-Object System.Diagnostics.Stopwatch
         $stopwatchObject = New-Object System.Diagnostics.Stopwatch
     }
@@ -294,7 +296,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing View(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipViewDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing view(s)")) {
@@ -313,7 +315,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Sequence(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipSequenceDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
@@ -332,7 +334,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Stored Procedure(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipProcedureDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing stored procedure(s)")) {
@@ -351,7 +353,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Foreign Key(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipForeignKeyDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing foreign key(s)")) {
@@ -370,7 +372,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Table(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipTableDrop) {
                     # Remove the tables
@@ -390,7 +392,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Function(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipFunctionDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing function(s)")) {
@@ -409,7 +411,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Data Type(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipDataTypeDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing data type(s)")) {
@@ -428,7 +430,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Table Type(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipTableTypeDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing table type(s)")) {
@@ -447,7 +449,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Sequence(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipXmlSchemaCollectionDrop) {
                     if ($PSCmdlet.ShouldProcess("$($destServer)", "Removing sequence(s)")) {
@@ -466,7 +468,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Removing Schema(s)"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipSchemaDrop) {
                     if (-not $SkipSchema) {
@@ -491,7 +493,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating Schemas"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipSchema) {
                     $params = @{
@@ -516,7 +518,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating Data Types"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipDataType) {
                     $params = @{
@@ -541,7 +543,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating Table Types"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipTableType) {
                     $params = @{
@@ -566,7 +568,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating Functions"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipFunction) {
                     $params = @{
@@ -591,7 +593,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating Sequences"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipSequence) {
                     $params = @{
@@ -616,7 +618,7 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Creating XML Schema Collections"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipXmlSchemaCollection) {
                     $params = @{
@@ -642,163 +644,126 @@ function Invoke-DbrDbRefresh {
                 $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
                 $progressParams.CurrentOperation = "Processing Tables"
 
-                Write-Progress $progressParams
+                Write-Progress @progressParams
 
                 if (-not $SkipTable) {
 
                     $sourceTables = $sourceDb.Tables | Sort-Object Name
 
-                    if (-not $SkipTable) {
-                        $totalObjects = $sourceTables.Count
-                        $objectStep = 0
+                    $totalObjects = $sourceTables.Count
+                    $objectStep = 0
 
-                        if ($SkipData) {
-                            $task = "Creating tables"
+                    if ($SkipData) {
+                        $task = "Creating tables"
+                    }
+                    else {
+                        $task = "Creating tables and copying data"
+                    }
+
+                    $params = @{
+                        SourceSqlInstance        = $sourceServer
+                        SourceSqlCredential      = $SourceSqlCredential
+                        DestinationSqlInstance   = $destServer
+                        DestinationSqlCredential = $DestinationSqlCredential
+                        SourceDatabase           = $sourceDb.Name
+                        DestinationDatabase      = $destDb.Name
+                        Schema                   = $item.Tables.Schema
+                        Table                    = $item.Tables.Name
+                        EnableException          = $true
+                    }
+
+                    Copy-DbrDbTable @params
+
+                    $destDb.Refresh()
+                    $destDb.Tables.Refresh()
+
+                    $objectStep = 0
+
+                    if (-not $SkipData) {
+
+                        $progressParams2 = @{
+                            Id               = ($progressId + 2)
+                            ParentId         = ($progressId + 1)
+                            Activity         = $task
+                            Status           = $null
+                            PercentComplete  = $null
+                            CurrentOperation = $operation
                         }
-                        else {
-                            $task = "Creating tables and copying data"
-                        }
 
-                        $params = @{
-                            SourceSqlInstance        = $sourceServer
-                            SourceSqlCredential      = $SourceSqlCredential
-                            DestinationSqlInstance   = $destServer
-                            DestinationSqlCredential = $DestinationSqlCredential
-                            SourceDatabase           = $sourceDb.Name
-                            DestinationDatabase      = $destDb.Name
-                            Schema                   = $item.Tables.Schema
-                            Table                    = $item.Tables.Name
-                            EnableException          = $true
-                        }
+                        foreach ($itemTable in $item.Tables) {
+                            $objectStep++
+                            $operation = "Table [$($itemTable.Schema)].[$($itemTable.Name)]"
 
-                        Copy-DbrDbTable @params
+                            $progressParams2.Status = "Progress-> Table $objectStep of $totalObjects"
+                            $progressParams2.PercentComplete = $($objectStep / $totalObjects * 100)
+                            $progressParams2.CurrentOperation = $operation
 
-                        $destDb.Refresh()
-                        $destDb.Tables.Refresh()
+                            Write-Progress @progressParams2
 
-                        $objectStep = 0
+                            $sourceTableObject = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
+                            $sourceTableObject.Refresh()
 
-                        if (-not $SkipData) {
 
-                            $copyParams = @{
-                                SqlInstance              = $sourceServer
-                                SqlCredential            = $SourceSqlCredential
-                                Database                 = $sourceDb.Name
-                                Destination              = $destServer
-                                DestinationSqlCredential = $DestinationSqlCredential
-                                DestinationDatabase      = $destDb.Name
-                                AutoCreateTable          = $false
-                                BatchSize                = $BatchSize
-                                BulkCopyTimeOut          = $Timeout
-                                KeepIdentity             = $true
-                                KeepNulls                = $true
-                                Table                    = $null
-                                DestinationTable         = $null
-                                Truncate                 = $false
-                                Query                    = $null
-                                EnableException          = $true
-                            }
+                            $stopwatchObject.Start()
 
-                            $progressParams2 = @{
-                                Id               = ($progressId + 2)
-                                ParentId         = ($progressId + 1)
-                                Activity         = $task
-                                Status           = $null
-                                PercentComplete  = $null
-                                CurrentOperation = $operation
-                            }
+                            # Check if the data needs to be copied or that the only the table needs to be created
+                            if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
+                                $connstring = $destServer.ConnectionContext.ConnectionString
+                                $bulkCopy = New-Object Data.SqlClient.SqlBulkCopy("$connstring;Database=$($destDb.Name)")
 
-                            foreach ($itemTable in $item.Tables) {
-                                $objectStep++
-                                $operation = "Table [$($itemTable.Schema)].[$($itemTable.Name)]"
-
-                                $progressParams2.Status = "Progress-> Table $objectStep of $totalObjects"
-                                $progressParams2.PercentComplete = $($objectStep / $totalObjects * 100)
-                                $progressParams2.CurrentOperation = $operation
-
-                                Write-Progress @progressParams2
-
-                                $copyParams.Table = "[$($itemTable.Schema)].[$($itemTable.Name)]"
-                                $copyParams.DestinationTable = "[$($itemTable.Schema)].[$($itemTable.Name)]"
-
-                                $sourceTableObject = $sourceDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
-                                $rowCountSource = $sourceTableObject.RowCount
-
-                                $stopwatchObject.Start()
-
-                                # Check if the data needs to be copied or that the only the table needs to be created
-                                if ($rowCountSource -ge 1) {
-                                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating table(s) and copying data")) {
-
-                                        $copyParams.Query = $itemTable.Query
-
-                                        <# if ($sourceTableObject.Columns.Count -ne $itemTable.Columns.Count) {
-                                            $columns = "[$($itemTable.Columns.Name -join '],[')]"
-
-                                            $query = "CREATE VIEW [dbo].[View__$($sourceTableObject.Schema)_$($sourceTableObject.Name)] AS SELECT $columns FROM $($sourceTableObject.Schema).$($sourceTableObject.Name);"
-                                            try {
-                                                Invoke-DbaQuery -SqlInstance $item.DestinationInstance -SqlCredential $DestinationSqlCredential -Database $destDb.Name -Query $query
-                                            }
-                                            catch {
-                                                Stop-PSFFunction -Message "Could not create view for table [$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]" -ErrorRecord $_
-                                            }
-
-                                            $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
-                                            $copyParams.DestinationTable = "[dbo].[View__$($sourceTableObject.Schema)_$($sourceTableObject.Name)]"
-                                        }
-                                        else {
-                                            $copyParams.Table = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
-                                            $copyParams.DestinationTable = "[$($sourceTableObject.Schema)].[$($sourceTableObject.Name)]"
-                                        } #>
-
-                                        $destDb.Tables.Refresh()
-
-                                        Write-PSFMessage -Level Verbose -Message "Copying data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
-                                        try {
-                                            $null = Copy-DbaDbTableData @copyParams
-                                        }
-                                        catch {
-                                            $params = @{
-                                                Message     = "Could not copy data for table [$($itemTable.Schema)].[$($itemTable.Name)]"
-                                                Target      = $itemTable
-                                                ErrorRecord = $_
-                                                Continue    = $true
-                                            }
-
-                                            $copyParams | Ft
-
-                                            $itemTable.Query
-
-                                            Stop-PSFFunction @params
-                                            return
-                                        }
-                                    }
-
-                                    $destTableObject = $destDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
-                                    [int]$rowCountDest = $destTableObject.RowCount
-
-                                    Write-PSFMessage -Level Verbose -Message "Row Count Source:         $($rowCountSource)"
-                                    Write-PSFMessage -Level Verbose -Message "Row Count Destination:    $($rowCountDest)"
-
-                                    $stopwatchObject.Stop()
-
-                                    [PSCustomObject]@{
-                                        SourceSqlInstance        = $sourceServer
-                                        SourceSqlCredential      = $SourceSqlCredential
-                                        DestinationSqlInstance   = $destServer
-                                        DestinationSqlCredential = $DestinationSqlCredential
-                                        ObjectType               = "Table"
-                                        Parent                   = "N/A"
-                                        Object                   = "$($itemTable.Schema).$($itemTable.Name)"
-                                        Notes                    = "Copied $($rowCountDest) of $($rowCountSource) rows"
-                                        ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
-                                    }
+                                foreach ($itemTableColumn in $itemTable.Columns) {
+                                    $null = $bulkCopy.ColumnMappings.Add("$($itemTableColumn.Name)", "$($itemTableColumn.Name)")
                                 }
 
-                                $stopwatchObject.Reset()
-                            } # End for each table
-                        }
-                        else {
+                                if ($Pscmdlet.ShouldProcess($sourceServer, "Copy data from [$($itemTable.Schema)].[$($itemTable.Name)]")) {
+                                    $cmd = $sourceServer.ConnectionContext.SqlConnectionObject.CreateCommand()
+                                    $cmd.CommandTimeout = 0
+                                    $cmd.CommandText = $itemTable.Query
+
+                                    if ($sourceServer.ConnectionContext.IsOpen -eq $false) {
+                                        $sourceServer.ConnectionContext.SqlConnectionObject.Open()
+                                    }
+
+                                    $bulkCopy.DestinationTableName = "[$($itemTable.Schema)].[$($itemTable.Name)]"
+                                    $bulkCopy.EnableStreaming = $true
+                                    $bulkCopy.BatchSize = $BatchSize
+                                    $bulkCopy.BulkCopyTimeOut = $Timeout
+                                }
+
+                                if ($Pscmdlet.ShouldProcess($destServer, "Writing rows to [$($itemTable.Schema)].[$($itemTable.Name)]")) {
+                                    try {
+                                        $reader = $cmd.ExecuteReader()
+                                        $bulkCopy.WriteToServer($reader)
+                                    }
+                                    catch {
+                                        Stop-PSFFunction -Message "Something went wrong writing to the server" -Target $destServer -ErrorRecord $_
+                                    }
+
+
+                                    if ($rowCount -is [int]) {
+                                        Write-Progress -id 1 -activity "Inserting rows" -status "Complete" -Completed
+                                    }
+
+                                    try {
+                                        $bulkCopy.Close()
+                                        $bulkCopy.Dispose()
+                                        $reader.Close()
+                                    }
+                                    catch {
+                                        Stop-PSFFunction -Message "Something went wrong closing the bulk copy objects" -ErrorRecord $_
+                                    }
+
+                                }
+                            }
+
+                            $destTableObject = $destDb.Tables | Where-Object { $_.Schema -eq $itemTable.Schema -and $_.Name -eq $itemTable.Name }
+                            [int]$rowCountDest = $destTableObject.RowCount
+
+                            Write-PSFMessage -Level Verbose -Message "Row Count Source:         $($sourceTableObject.RowCount)"
+                            Write-PSFMessage -Level Verbose -Message "Row Count Destination:    $($rowCountDest)"
+
+                            $stopwatchObject.Stop()
+
                             [PSCustomObject]@{
                                 SourceSqlInstance        = $sourceServer
                                 SourceSqlCredential      = $SourceSqlCredential
@@ -807,58 +772,61 @@ function Invoke-DbrDbRefresh {
                                 ObjectType               = "Table"
                                 Parent                   = "N/A"
                                 Object                   = "$($itemTable.Schema).$($itemTable.Name)"
-                                Notes                    = "No rows to copy"
-                                ElapsedSeconds           = $null
-                            }
-                        }
-
-                        # Create the indexes
-                        $currentStep = 19
-
-                        $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
-                        $progressParams.CurrentOperation = "Creating Indexe(s)"
-
-                        Write-Progress @progressParams
-
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating index(es)")) {
-                            $params = @{
-                                SourceSqlInstance        = $sourceServer
-                                SourceSqlCredential      = $SourceSqlCredential
-                                DestinationSqlInstance   = $destServer
-                                DestinationSqlCredential = $DestinationSqlCredential
-                                SourceDatabase           = $sourceDb.Name
-                                DestinationDatabase      = $destDb.Name
-                                EnableException          = $true
+                                Notes                    = "Copied $($sourceTableObject.RowCount) of $($rowCountSource) rows"
+                                ElapsedSeconds           = [int][Math]::Truncate($stopwatchObject.Elapsed.TotalSeconds)
                             }
 
-                            Copy-DbrDbIndex @params
-
-                            $destDb.Refresh()
-                        }
-
-                        $currentStep = 20
-
-                        $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
-                        $progressParams.CurrentOperation = "Creating Foreign Key(s)"
-
-                        Write-Progress @progressParams
-
-                        if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating foreign key(s)")) {
-                            $params = @{
-                                SourceSqlInstance        = $sourceServer
-                                SourceSqlCredential      = $SourceSqlCredential
-                                DestinationSqlInstance   = $destServer
-                                DestinationSqlCredential = $DestinationSqlCredential
-                                SourceDatabase           = $sourceDb.Name
-                                DestinationDatabase      = $destDb.Name
-                                EnableException          = $true
-                            }
-
-                            Copy-DbrDbForeignKey @params
-
-                            $destDb.Refresh()
-                        }
+                            $stopwatchObject.Reset()
+                        } # End for each table
                     }
+
+                    # Create the indexes
+                    $currentStep = 19
+
+                    $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                    $progressParams.CurrentOperation = "Creating Indexe(s)"
+
+                    Write-Progress @progressParams
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating index(es)")) {
+                        $params = @{
+                            SourceSqlInstance        = $sourceServer
+                            SourceSqlCredential      = $SourceSqlCredential
+                            DestinationSqlInstance   = $destServer
+                            DestinationSqlCredential = $DestinationSqlCredential
+                            SourceDatabase           = $sourceDb.Name
+                            DestinationDatabase      = $destDb.Name
+                            EnableException          = $true
+                        }
+
+                        Copy-DbrDbIndex @params
+
+                        $destDb.Refresh()
+                    }
+
+                    $currentStep = 20
+
+                    $progressParams.PercentComplete = ($currentStep / $totalSteps * 100)
+                    $progressParams.CurrentOperation = "Creating Foreign Key(s)"
+
+                    Write-Progress @progressParams
+
+                    if ($PSCmdlet.ShouldProcess("$($destServer)", "Creating foreign key(s)")) {
+                        $params = @{
+                            SourceSqlInstance        = $sourceServer
+                            SourceSqlCredential      = $SourceSqlCredential
+                            DestinationSqlInstance   = $destServer
+                            DestinationSqlCredential = $DestinationSqlCredential
+                            SourceDatabase           = $sourceDb.Name
+                            DestinationDatabase      = $destDb.Name
+                            EnableException          = $true
+                        }
+
+                        Copy-DbrDbForeignKey @params
+
+                        $destDb.Refresh()
+                    }
+
                 }
                 #endregion table copy
 
