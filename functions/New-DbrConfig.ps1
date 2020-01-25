@@ -16,7 +16,7 @@ function New-DbrConfig {
     .PARAMETER Database
         Database to remove the user defined data type from
 
-    .PARAMETER OutPath
+    .PARAMETER OutFilePath
         Output path to export the JSON data to.
         The default location is $env:TEMP
 
@@ -52,7 +52,7 @@ function New-DbrConfig {
         [PSCredential]$SqlCredential,
         [parameter(Mandatory)]
         [string[]]$Database,
-        [string]$OutPath,
+        [string]$OutFilePath,
         [string[]]$Schema,
         [string[]]$Table,
         [switch]$EnableException
@@ -66,22 +66,22 @@ function New-DbrConfig {
 
         [array]$databases = $server.Databases | Where-Object Name -in $Database
 
-        if (-not $OutPath) {
+        if (-not $OutFilePath) {
             Write-PSFMessage -Message "Setting output file path" -Level Verbose
-            $OutPath = $env:TEMP
+            $OutFilePath = $env:TEMP
         }
 
-        if ((Test-Path -Path $OutPath)) {
-            if ((Get-Item $OutPath) -is [System.IO.FileInfo]) {
-                Stop-PSFFunction -Message "OutFilePath is not a directory. Please enter a directory"
+        if ((Test-Path -Path $OutFilePath)) {
+            if ((Get-Item $OutFilePath) -isnot [System.IO.FileInfo]) {
+                Stop-PSFFunction -Message "OutFilePath is not a file. Please enter a file"
             }
         }
         else {
             try {
-                $null = New-Item -Path $OutPath -ItemType File
+                $null = New-Item -Path $OutFilePath -ItemType File
             }
             catch {
-                Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath -EnableException:$EnableException
+                Stop-PSFFunction -Message "Could not create output file" -Target $OutFilePath
             }
         }
 
@@ -190,15 +190,14 @@ function New-DbrConfig {
             }
         }
 
-        if ($PSCmdlet.ShouldProcess("Writing JSON data to '$($OutPath)'")) {
+        if ($PSCmdlet.ShouldProcess("Writing JSON data to '$($OutFilePath)'")) {
             try {
-                $filePath = Join-Path -Path $OutPath -ChildPath "$($server.DomainInstanceName)_DBRefresh.json"
-                $config | ConvertTo-Json -Depth 7 | Set-Content -Path $filePath
+                $config | ConvertTo-Json -Depth 7 | Set-Content -Path $OutFilePath
 
-                Get-ItemProperty $filePath
+                Get-ItemProperty $OutFilePath
             }
             catch {
-                Stop-PSFFunction -Message "Could not write JSON data" -Target $filePath -ErrorRecord $_ -EnableException:$EnableException
+                Stop-PSFFunction -Message "Could not write JSON data" -Target $OutFilePath -ErrorRecord $_ -EnableException:$EnableException
             }
 
         }
