@@ -16,13 +16,8 @@ Set-PSFConfig -Module PSDatabaseRefresh -Name 'Import.IndividualFiles' -Value $f
 
 $params = @{
     Module      = 'PSDatabaseRefresh'
-    Name        = 'Config.SupportedDataTypes'
-    Value       = @(
-        'bigint', 'bit', 'bool', 'char', 'date', 'datetime', 'datetime2', 'decimal', 'float',
-        'image', 'int', 'money', 'nchar', 'ntext', 'nvarchar', 'numeric', 'real', 'smalldatetime',
-        'smallint', 'sysname', 'text', 'time', 'tinyint', 'uniqueidentifier', 'userdefineddatatype', 'varbinary',
-        'varchar', 'xml'
-    )
+    Name        = 'Config.NotSupportedDataTypes'
+    Value       = @('geography', 'geometry')
     Description = 'Supported data types used in several command to filter out columns'
 }
 Set-PSFConfig @params
