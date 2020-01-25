@@ -52,7 +52,7 @@ function Test-DbrConfig {
             Stop-PSFFunction -Message "Could not parse configuration file" -ErrorRecord $_ -Target $FilePath -EnableException:$EnableException
         }
 
-        $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedDataTypes
+        $notSupportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.NotSupportedDataTypes
         $supportedOperators = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedOperators
 
         $requiredDatabaseProperties = 'SourceInstance', 'DestinationInstance', 'SourceDatabase', 'DestinationDatabase', 'Tables'
@@ -159,7 +159,7 @@ function Test-DbrConfig {
                     }
 
                     # Test column type
-                    if ($column.datatype -notin $supportedDataTypes) {
+                    if ($column.datatype -in $notSupportedDataTypes) {
                         [PSCustomObject]@{
                             SourceInstance      = $database.sourceinstance
                             DestinationInstance = $database.destinationinstance

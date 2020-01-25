@@ -85,7 +85,7 @@ function New-DbrConfig {
             }
         }
 
-        $supportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.SupportedDataTypes
+        $notSupportedDataTypes = Get-PSFConfigValue PSDatabaseRefresh.Config.NotSupportedDataTypes
     }
 
     process {
@@ -144,7 +144,7 @@ function New-DbrConfig {
 
                     Write-Progress @params
 
-                    $columns = $tableObject.Columns | Where-Object { $_.DataType.Name -in $supportedDataTypes }
+                    $columns = $tableObject.Columns | Where-Object { $_.DataType.SqlDatatype -notin $notSupportedDataTypes }
 
                     $columnObjectArray = @()
 
