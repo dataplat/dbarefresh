@@ -1,0 +1,11 @@
+﻿TOPIC
+	about_dbarefresh
+	
+SHORT DESCRIPTION
+	Explains how to use the dbarefresh powershell module
+	
+LONG DESCRIPTION
+	<Insert Content here>
+
+KEYWORDS
+	dbarefresh
